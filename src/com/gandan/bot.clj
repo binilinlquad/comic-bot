@@ -1,6 +1,5 @@
 (ns com.gandan.bot
    (:require [clj-http.client :as client]
-             [clojure.pprint :as pprint]
              [cheshire.core :as cheshire]))
 
 
