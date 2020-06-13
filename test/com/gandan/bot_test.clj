@@ -5,11 +5,17 @@
 (deftest integration-test
   (testing "fetch latest comic from xkcd"
     (let [latest (fetch-latest)]
-      (is (= 200 (:status latest)))
-      (is (:body latest)))))
+      (is (contains? latest :title))
+      (is (contains? latest :img)))))
 
-(deftest get-title-and-image
-  (testing "get image url from returned json response body"
-    (let [latest { "img" "some-image-url" "title" "some-title"}]
-      (is (= "some-image-url" (get-image-url latest)))
-      (is (= "some-title" (get-title latest))))))
+(deftest unit-test
+  (testing "parse json response resulted map"
+    (let [latest (parse-resp { "img" "some-image-url" "title" "some-title"})]
+      (is (contains? latest :img))
+      (is (contains? latest :title))))
+  
+  (testing "fetching with fake fetcher"
+    (let [fake-resp "{ \"img\": \"some-image-url\", \"title\": \"some-title\" }"
+          fake-fetcher (fn [url] fake-resp) 
+          latest (fetch-latest fake-fetcher)]
+        (is (= "some-image-url" (latest :img))))))
