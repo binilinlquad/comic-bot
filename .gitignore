@@ -1,3 +1,6 @@
 *.swp
 .cpcache
 bin
+bot_token.txt
+env.sh
+
