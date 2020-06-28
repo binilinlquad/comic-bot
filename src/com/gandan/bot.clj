@@ -23,10 +23,19 @@
    :sendPhoto "/sendPhoto"
    :sendMessage "/sendMessage"})
 
-(defn fetch-latest-messages []
-  (-> (client/get (str bot-api bot-token (:getUpdates bot-methods)))
-      (:body)
-      (cheshire/parse-string)))
+(defn fetch-latest-messages
+  ([]
+   (fetch-latest-messages nil))
+  ([offset]
+   (->
+    (if offset
+      (client/get
+       (str bot-api bot-token (:getUpdates bot-methods))
+       :query-params {:offset (inc offset)})
+      (client/get
+       (str bot-api bot-token (:getUpdates bot-methods))))
+    (:body)
+    (cheshire/parse-string))))
 
 (defn send-image [chat-id url]
   (-> (client/post (str bot-api bot-token (:sendPhoto bot-methods))
