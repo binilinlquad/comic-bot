@@ -28,12 +28,9 @@
    (fetch-latest-messages nil))
   ([offset]
    (->
-    (if offset
-      (client/get
-       (str bot-api bot-token (:getUpdates bot-methods))
-       :query-params {:offset (inc offset)})
-      (client/get
-       (str bot-api bot-token (:getUpdates bot-methods))))
+    (client/get
+     (str bot-api bot-token (:getUpdates bot-methods))
+     {:query-params (if offset {"offset" (inc offset)} nil)})
     (:body)
     (cheshire/parse-string))))
 
@@ -91,10 +88,19 @@
           :send-image (send-image chat-id (:img-url cmd)))
         (recur rst)))))
 
+(defn bot-polling []
+  (loop [latest-update-id nil]
+    (let [updates (if latest-update-id
+                    (fetch-latest-messages latest-update-id)
+                    (fetch-latest-messages))]
+      (-> (get updates "result")
+          (parse-telegram-updates)
+          (bot-handle-messages)
+          (bot-handle-cmd))
+      (Thread/sleep (* 1 60 1000))
+      (recur (->  (get updates "result")
+                  (last)
+                  (get "update_id"))))))
+
 (defn -main []
-  (-> (fetch-latest-messages)
-      (get-in ["result"])
-      (parse-telegram-updates)
-      (bot-handle-messages)
-      (bot-handle-cmd)
-      (pprint/pprint)))
+  (bot-polling))
