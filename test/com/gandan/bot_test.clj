@@ -9,7 +9,7 @@
       (is (contains? latest :img)))))
 
 (deftest integration-test-with-telegram-api
- (testing "fetch latest messages"
+  (testing "fetch latest messages"
     (let [resp (fetch-latest-messages)]
       (is (get resp "ok"))))
 
@@ -23,7 +23,7 @@
 
 (deftest unit-test-get-comic
   (testing "convert json response into map"
-    (let [latest (parse-resp { "img" "some-image-url" "title" "some-title"})]
+    (let [latest (parse-resp {"img" "some-image-url" "title" "some-title"})]
       (is (contains? latest :img))
       (is (contains? latest :title))))
 

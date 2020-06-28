@@ -1,7 +1,7 @@
 (ns com.gandan.bot
-   (:require [clj-http.client :as client]
-             [clojure.pprint :as pprint]
-             [cheshire.core :as cheshire]))
+  (:require [clj-http.client :as client]
+            [clojure.pprint :as pprint]
+            [cheshire.core :as cheshire]))
 
 (defn parse-resp [json]
   {:img (get json "img")
@@ -10,7 +10,7 @@
 (defn fetch-latest-comic
   ([]
    (fetch-latest-comic (fn [url] (-> (client/get url)
-                               (:body)))))
+                                     (:body)))))
   ([fetcher]
    (-> (fetcher "https://xkcd.com/info.0.json")
        (cheshire/parse-string)
@@ -46,8 +46,8 @@
    :text msg})
 
 (defn bot-send-img-cmd [chat-id img-url]
-  {:cmd :send-image 
-   :chat-id chat-id 
+  {:cmd :send-image
+   :chat-id chat-id
    :img-url img-url})
 
 (defn bot-handle-messages [messages]
