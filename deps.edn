@@ -9,6 +9,6 @@
          :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.632"}}}
   :fmt {:extra-deps {com.jameslaverack/cljfmt-runner
                      {:git/url "https://github.com/JamesLaverack/cljfmt-runner"
-                      :sha "97960e9a6464935534b5a6bab529e063d0027128"}}}
-  :fmt/check {:main-opts ["-m" "cljfmt-runner.check"]}
+                      :sha "97960e9a6464935534b5a6bab529e063d0027128"}}
+        :main-opts ["-m" "cljfmt-runner.check"]}
   :fmt/fix {:main-opts ["-m" "cljfmt-runner.fix"]}}}
