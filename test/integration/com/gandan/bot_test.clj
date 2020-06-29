@@ -23,8 +23,8 @@
 
 (deftest bot-test
   (testing "bot handle incoming messages"
-    (let [commands (bot-handle-messages [{:chat-id 1 :text "/start"}
-                                         {:chat-id 2 :text "/latest"}])]
+    (let [commands (bot-convert-messages-to-commands [{:chat-id 1 :text "/start"}
+                                                      {:chat-id 2 :text "/latest"}])]
       (is (= [{:cmd :send-text :chat-id 1 :text "Welcome to prototype comic bot!"}
               {:cmd :send-image :chat-id 2 :img-url "some-url"}] commands)))))
 

@@ -56,13 +56,13 @@
    :chat-id chat-id
    :img-url img-url})
 
-(defn bot-handle-messages [messages]
+(defn bot-convert-messages-to-commands [messages]
   (map (fn [msg]
          (let [chat-id (:chat-id msg)
-              text (:text msg)]
-               (condp #(= %1 %2) text
-                 "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
-                 "/latest" (bot-send-img-cmd chat-id (:img (fetch-latest-comic))))))
+               text (:text msg)]
+           (condp #(= %1 %2) text
+             "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
+             "/latest" (bot-send-img-cmd chat-id (:img (fetch-latest-comic))))))
        messages))
 
 (defn parse-telegram-updates [updates]
@@ -91,7 +91,7 @@
                     (fetch-latest-messages))]
       (-> (get updates "result")
           (parse-telegram-updates)
-          (bot-handle-messages)
+          (bot-convert-messages-to-commands)
           (bot-handle-cmd))
       (Thread/sleep (* 1 60 1000))
       (recur (->  (get updates "result")
