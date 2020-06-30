@@ -76,13 +76,13 @@
       result)))
 
 (defn bot-handle-cmd [commands]
-  (loop [[cmd & rst] commands]
-    (if cmd
+  (apply 
+    (fn [cmd] 
       (let [chat-id (:chat-id cmd)]
         (condp #(= %1 %2) (:cmd cmd)
           :send-text (send-message chat-id (:text cmd))
-          :send-image (send-image chat-id (:img-url cmd)))
-        (recur rst)))))
+          :send-image (send-image chat-id (:img-url cmd)))))
+      commands))
 
 (defn bot-polling []
   (loop [latest-update-id nil]
