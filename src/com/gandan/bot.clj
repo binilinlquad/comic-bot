@@ -17,31 +17,34 @@
        (parse-resp))))
 
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
-(def bot-api "https://api.telegram.org/bot")
-(def bot-methods
-  {:getUpdates "/getUpdates"
-   :sendPhoto "/sendPhoto"
-   :sendMessage "/sendMessage"})
+
+(defn create-bot-api [token]
+  (let [api-prefix (str "https://api.telegram.org/bot" token)
+        api-endpoint-create #(str api-prefix %)]
+    {:getUpdates (api-endpoint-create "/getUpdates")
+     :sendPhoto (api-endpoint-create "/sendPhoto")
+     :sendMessage (api-endpoint-create "/sendMessage")}))
+
+(def bot-api (create-bot-api bot-token))
 
 (defn fetch-latest-messages
   ([]
    (fetch-latest-messages nil))
   ([offset]
    (->
-    (client/get
-     (str bot-api bot-token (:getUpdates bot-methods))
+    (client/get (:getUpdates bot-api)
      {:query-params (if offset {"offset" (inc offset)} nil)})
     (:body)
     (cheshire/parse-string))))
 
 (defn send-image [chat-id url]
-  (-> (client/post (str bot-api bot-token (:sendPhoto bot-methods))
+  (-> (client/post (:sendPhoto bot-api)
                    {:form-params {:chat_id chat-id :photo url}})
       (:body)
       (cheshire/parse-string)))
 
 (defn send-message [chat-id txt]
-  (-> (client/post (str bot-api bot-token (:sendMessage bot-methods))
+  (-> (client/post (:sendMessage bot-api)
                    {:form-params {:chat_id chat-id :text txt}})
       (:body)
       (cheshire/parse-string)))
@@ -76,8 +79,8 @@
       result)))
 
 (defn bot-handle-cmd [commands]
-  (apply 
-    (fn [cmd] 
+  (apply
+    (fn [cmd]
       (let [chat-id (:chat-id cmd)]
         (condp #(= %1 %2) (:cmd cmd)
           :send-text (send-message chat-id (:text cmd))
