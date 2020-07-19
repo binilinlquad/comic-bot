@@ -4,3 +4,4 @@ bin
 bot_token.txt
 env.sh
 
+/.nrepl-port
