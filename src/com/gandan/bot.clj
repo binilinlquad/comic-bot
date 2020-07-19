@@ -20,12 +20,15 @@
 
 (defn create-bot-api [token]
   (let [api-prefix (str "https://api.telegram.org/bot" token)
-        api-endpoint-create #(str api-prefix %)]
-    {:getUpdates (api-endpoint-create "/getUpdates")
-     :sendPhoto (api-endpoint-create "/sendPhoto")
-     :sendMessage (api-endpoint-create "/sendMessage")}))
+        create-endpoint #(str api-prefix %)]
+    {:getUpdates (create-endpoint "/getUpdates")
+     :sendPhoto (create-endpoint "/sendPhoto")
+     :sendMessage (create-endpoint "/sendMessage")}))
 
 (def bot-api (create-bot-api bot-token))
+
+(defn response-to-json [response]
+  (cheshire/parse-string (:body response)))
 
 (defn fetch-latest-messages
   ([]
@@ -33,21 +36,18 @@
   ([offset]
    (->
     (client/get (:getUpdates bot-api)
-     {:query-params (if offset {"offset" (inc offset)} nil)})
-    (:body)
-    (cheshire/parse-string))))
+                {:query-params (if offset {"offset" (inc offset)} nil)})
+    (response-to-json))))
 
 (defn send-image [chat-id url]
   (-> (client/post (:sendPhoto bot-api)
                    {:form-params {:chat_id chat-id :photo url}})
-      (:body)
-      (cheshire/parse-string)))
+      (response-to-json)))
 
 (defn send-message [chat-id txt]
   (-> (client/post (:sendMessage bot-api)
                    {:form-params {:chat_id chat-id :text txt}})
-      (:body)
-      (cheshire/parse-string)))
+      (response-to-json)))
 
 (defn bot-send-msg-cmd [chat-id msg]
   {:cmd :send-text
@@ -79,13 +79,14 @@
       result)))
 
 (defn bot-handle-cmd [commands]
-  (apply
-    (fn [cmd]
-      (let [chat-id (:chat-id cmd)]
-        (condp #(= %1 %2) (:cmd cmd)
-          :send-text (send-message chat-id (:text cmd))
-          :send-image (send-image chat-id (:img-url cmd)))))
-      commands))
+  (if (not-empty commands)
+    (apply
+     (fn [cmd]
+       (let [chat-id (:chat-id cmd)]
+         (condp #(= %1 %2) (:cmd cmd)
+           :send-text (send-message chat-id (:text cmd))
+           :send-image (send-image chat-id (:img-url cmd)))))
+     commands)))
 
 (defn bot-polling []
   (loop [latest-update-id nil]
