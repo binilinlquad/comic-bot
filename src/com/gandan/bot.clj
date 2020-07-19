@@ -18,14 +18,16 @@
 
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
-(defn create-bot-api [token]
-  (let [api-prefix (str "https://api.telegram.org/bot" token)
-        create-endpoint #(str api-prefix %)]
-    {:getUpdates (create-endpoint "/getUpdates")
-     :sendPhoto (create-endpoint "/sendPhoto")
-     :sendMessage (create-endpoint "/sendMessage")}))
+(def bot-url (str "https://api.telegram.org/bot" bot-token))
 
-(def bot-api (create-bot-api bot-token))
+(defn url-build [path]
+  (str bot-url "/" path))
+
+(defn http-get [path query-params]
+  (client/get (url-build path) query-params))
+
+(defn http-post [path request-body]
+  (client/post (url-build path) request-body))
 
 (defn response-to-json [response]
   (cheshire/parse-string (:body response)))
@@ -35,18 +37,15 @@
    (fetch-latest-messages nil))
   ([offset]
    (->
-    (client/get (:getUpdates bot-api)
-                {:query-params (if offset {"offset" (inc offset)} nil)})
+    (http-get "getUpdates" {:query-params (if offset {"offset" (inc offset)} nil)})
     (response-to-json))))
 
 (defn send-image [chat-id url]
-  (-> (client/post (:sendPhoto bot-api)
-                   {:form-params {:chat_id chat-id :photo url}})
+  (-> (http-post "sendPhoto" {:form-params {:chat_id chat-id :photo url}})
       (response-to-json)))
 
 (defn send-message [chat-id txt]
-  (-> (client/post (:sendMessage bot-api)
-                   {:form-params {:chat_id chat-id :text txt}})
+  (-> (http-post "sendMessage" {:form-params {:chat_id chat-id :text txt}})
       (response-to-json)))
 
 (defn bot-send-msg-cmd [chat-id msg]
@@ -79,14 +78,11 @@
       result)))
 
 (defn bot-handle-cmd [commands]
-  (if (not-empty commands)
-    (apply
-     (fn [cmd]
-       (let [chat-id (:chat-id cmd)]
-         (condp #(= %1 %2) (:cmd cmd)
-           :send-text (send-message chat-id (:text cmd))
-           :send-image (send-image chat-id (:img-url cmd)))))
-     commands)))
+  (doseq [cmd commands]
+    (let [chat-id (:chat-id cmd)]
+      (condp #(= %1 %2) (:cmd cmd)
+        :send-text (send-message chat-id (:text cmd))
+        :send-image (send-image chat-id (:img-url cmd))))))
 
 (defn bot-polling []
   (loop [latest-update-id nil]
