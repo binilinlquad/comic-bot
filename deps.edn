@@ -1,6 +1,6 @@
 {:deps
- {clj-http {:mvn/version "3.10.1"}
-  cheshire {:mvn/version "5.10.0"}}
+ {clj-http/clj-http {:mvn/version "3.10.1"}
+  cheshire/cheshire {:mvn/version "5.10.0"}}
 
  :aliases
  {:test {:extra-paths ["test"]
