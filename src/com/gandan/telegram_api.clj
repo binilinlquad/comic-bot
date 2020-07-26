@@ -25,3 +25,10 @@
   (send-message [this chat-id txt]
     (client/post (create-endpoint baseUrl token "sendMessage")
                  {:form-params {:chat_id chat-id :text txt}})))
+
+
+(defn create-client
+  ([baseUrl token]
+   (Client. baseUrl token))
+  ([token]
+   (Client. "https://api.telegram.org/bot" token)))

@@ -2,8 +2,7 @@
   (:require [clj-http.client :as client]
             [clojure.pprint :as pprint]
             [cheshire.core :as cheshire]
-            [com.gandan.telegram-api :as telegram])
-  (:import (com.gandan.telegram_api Client)))
+            [com.gandan.telegram-api :as telegram]))
 
 (defn parse-resp [json]
   {:img (get json "img")
@@ -20,7 +19,7 @@
 
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
-(def client (Client. "https://api.telegram.org/bot" bot-token))
+(def client (telegram/create-client bot-token))
 
 (defn response-to-json [response]
   (cheshire/parse-string (:body response)))
