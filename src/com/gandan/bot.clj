@@ -1,7 +1,9 @@
 (ns com.gandan.bot
   (:require [clj-http.client :as client]
             [clojure.pprint :as pprint]
-            [cheshire.core :as cheshire]))
+            [cheshire.core :as cheshire]
+            [com.gandan.telegram-api :as telegram])
+  (:import (com.gandan.telegram_api Client)))
 
 (defn parse-resp [json]
   {:img (get json "img")
@@ -18,34 +20,26 @@
 
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
-(def bot-url (str "https://api.telegram.org/bot" bot-token))
-
-(defn url-build [path]
-  (str bot-url "/" path))
-
-(defn http-get [path query-params]
-  (client/get (url-build path) query-params))
-
-(defn http-post [path request-body]
-  (client/post (url-build path) request-body))
+(def client (Client. "https://api.telegram.org/bot" bot-token))
 
 (defn response-to-json [response]
   (cheshire/parse-string (:body response)))
 
 (defn fetch-latest-messages
   ([]
-   (fetch-latest-messages nil))
+   (-> (.fetch-latest-messages client)
+       (response-to-json)))
   ([offset]
    (->
-    (http-get "getUpdates" {:query-params (if offset {"offset" (inc offset)} nil)})
+    (.fetch-latest-messages client offset)
     (response-to-json))))
 
 (defn send-image [chat-id url]
-  (-> (http-post "sendPhoto" {:form-params {:chat_id chat-id :photo url}})
+  (-> (.send-image client chat-id url)
       (response-to-json)))
 
 (defn send-message [chat-id txt]
-  (-> (http-post "sendMessage" {:form-params {:chat_id chat-id :text txt}})
+  (-> (.send-message client chat-id txt)
       (response-to-json)))
 
 (defn bot-send-msg-cmd [chat-id msg]
