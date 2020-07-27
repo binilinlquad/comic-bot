@@ -1,6 +1,6 @@
-(ns com.gandan.bot-test
+(ns com.gandan.xkcd-api-test
   (:require [clojure.test :refer :all]
-            [com.gandan.bot :refer :all]))
+            [com.gandan.xkcd-api :refer :all]))
 
 (deftest convert-json-to-map
   (testing "convert json response into map"

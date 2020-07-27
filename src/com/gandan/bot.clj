@@ -2,20 +2,8 @@
   (:require [clj-http.client :as client]
             [clojure.pprint :as pprint]
             [cheshire.core :as cheshire]
-            [com.gandan.telegram-api :as telegram]))
-
-(defn parse-resp [json]
-  {:img (get json "img")
-   :title (get json "title")})
-
-(defn fetch-latest-comic
-  ([]
-   (fetch-latest-comic (fn [url] (-> (client/get url)
-                                     (:body)))))
-  ([fetcher]
-   (-> (fetcher "https://xkcd.com/info.0.json")
-       (cheshire/parse-string)
-       (parse-resp))))
+            [com.gandan.telegram-api :as telegram]
+            [com.gandan.xkcd-api :as xkcd]))
 
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
@@ -57,7 +45,7 @@
                text (:text msg)]
            (condp #(= %1 %2) text
              "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
-             "/latest" (bot-send-img-cmd chat-id (:img (fetch-latest-comic))))))
+             "/latest" (bot-send-img-cmd chat-id (:img (xkcd/fetch-latest-comic))))))
        messages))
 
 (defn parse-telegram-updates [updates]
