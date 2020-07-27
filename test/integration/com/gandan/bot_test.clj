@@ -2,12 +2,6 @@
   (:require [clojure.test :refer :all]
             [com.gandan.bot :refer :all]))
 
-(deftest integration-test-get-comic
-  (testing "fetch latest comic from xkcd"
-    (let [latest (fetch-latest-comic)]
-      (is (contains? latest :title))
-      (is (contains? latest :img)))))
-
 (deftest integration-test-with-telegram-api
   (testing "fetch latest messages"
     (let [resp (fetch-latest-messages)]
@@ -29,4 +23,3 @@
           second-command (nth commands 1)]
       (is (= {:cmd :send-text :chat-id 1 :text "Welcome to prototype comic bot!"} first-command))
       (is (and (= (:cmd second-command) :send-image ) (:img-url second-command))))))
-
