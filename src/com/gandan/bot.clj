@@ -5,6 +5,7 @@
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
+; Related Telegram Bot API communication
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
 (def client (telegram/create-client bot-token))
@@ -29,6 +30,22 @@
   (-> (.send-message client chat-id txt)
       (response-to-json)))
 
+(defn parse-telegram-updates [updates]
+  (loop [[upd & rst] updates
+         result []]
+    (if upd
+      (->> {:chat-id (get-in upd ["message" "chat" "id"])
+            :text (get-in upd ["message" "text"])}
+           (conj result)
+           (recur rst))
+      result)))
+
+; Related Xkcd API communication
+(defn parse-xkcd-latest-resp [json]
+  {:img (get json "img")
+   :title (get json "title")})
+
+; Bot processing and logic
 (defn bot-send-msg-cmd [chat-id msg]
   {:cmd :send-text
    :chat-id chat-id
@@ -47,16 +64,6 @@
              "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
              "/latest" (bot-send-img-cmd chat-id (:img (xkcd/fetch-latest-comic))))))
        messages))
-
-(defn parse-telegram-updates [updates]
-  (loop [[upd & rst] updates
-         result []]
-    (if upd
-      (->> {:chat-id (get-in upd ["message" "chat" "id"])
-            :text (get-in upd ["message" "text"])}
-           (conj result)
-           (recur rst))
-      result)))
 
 (defn bot-handle-cmd [commands]
   (doseq [cmd commands]
