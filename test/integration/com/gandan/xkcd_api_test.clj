@@ -5,5 +5,5 @@
 (deftest integration-test-get-comic
   (testing "fetch latest comic from xkcd"
     (let [latest (fetch-latest-comic)]
-      (is (contains? latest :title))
-      (is (contains? latest :img)))))
+      (is (contains? latest "title"))
+      (is (contains? latest "img")))))

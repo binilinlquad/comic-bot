@@ -11,5 +11,4 @@
 
 (defn fetch-latest-comic []
    (-> (client/get "https://xkcd.com/info.0.json")
-       (response-to-json)
-       (convert-xkcd-latest-resp-to-map)))
+       (response-to-json)))
