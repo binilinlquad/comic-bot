@@ -4,6 +4,6 @@
 
 (deftest convert-json-to-map
   (testing "convert json response into map"
-    (let [latest (parse-resp {"img" "some-image-url" "title" "some-title"})]
+    (let [latest (convert-xkcd-latest-resp-to-map {"img" "some-image-url" "title" "some-title"})]
       (is (contains? latest :img))
       (is (contains? latest :title)))))
