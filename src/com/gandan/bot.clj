@@ -1,34 +1,13 @@
 (ns com.gandan.bot
   (:require [clj-http.client :as client]
             [clojure.pprint :as pprint]
-            [cheshire.core :as cheshire]
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
-(def client (telegram/create-client bot-token))
-
-(defn response-to-json [response]
-  (cheshire/parse-string (:body response)))
-
-(defn fetch-latest-messages
-  ([]
-   (-> (.fetch-latest-messages client)
-       (response-to-json)))
-  ([offset]
-   (->
-    (.fetch-latest-messages client offset)
-    (response-to-json))))
-
-(defn send-image [chat-id url]
-  (-> (.send-image client chat-id url)
-      (response-to-json)))
-
-(defn send-message [chat-id txt]
-  (-> (.send-message client chat-id txt)
-      (response-to-json)))
+(def telegram-config (telegram/config {:token bot-token}))
 
 (defn parse-telegram-updates [updates]
   (loop [[upd & rst] updates
@@ -72,14 +51,14 @@
   (doseq [cmd commands]
     (let [chat-id (:chat-id cmd)]
       (condp #(= %1 %2) (:cmd cmd)
-        :send-text (send-message chat-id (:text cmd))
-        :send-image (send-image chat-id (:img-url cmd))))))
+        :send-text (telegram/send-message telegram-config chat-id (:text cmd))
+        :send-image (telegram/send-image telegram-config chat-id (:img-url cmd))))))
 
 (defn bot-polling []
   (loop [latest-update-id nil]
     (let [updates (if latest-update-id
-                    (fetch-latest-messages latest-update-id)
-                    (fetch-latest-messages))]
+                    (telegram/fetch-latest-messages telegram-config latest-update-id)
+                    (telegram/fetch-latest-messages telegram-config))]
       (-> (get updates "result")
           (parse-telegram-updates)
           (bot-convert-messages-to-commands)

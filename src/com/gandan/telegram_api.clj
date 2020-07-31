@@ -1,34 +1,35 @@
 (ns com.gandan.telegram-api
-  (:require [clj-http.client :as http]))
+  (:require [clj-http.client :as http]
+            [cheshire.core :as cheshire]))
 
-(defn- create-endpoint [baseUrl token api-path]
-  (str baseUrl token "/" api-path))
+(def base-config
+  {:base-url "https://api.telegram.org/bot"
+   :token "put-your-api-token"})
 
-(defprotocol Api
-  (fetch-latest-messages [this] [this offset])
-  (send-image [this chat-id url])
-  (send-message [this chat-id txt]))
+(defn config [config]
+  (merge base-config config))
 
-(deftype Client [baseUrl token]
-  Api
-  (fetch-latest-messages [this]
-    (http/get (create-endpoint baseUrl token "getUpdates")))
+(defn- response-to-json [response]
+  (cheshire/parse-string (:body response)))
 
-  (fetch-latest-messages [this offset]
-    (http/get (create-endpoint baseUrl token "getUpdates")
-                {:query-params {"offset" (inc offset)}}))
+(defn- create-endpoint [config path]
+  (str (:base-url config) (:token config) "/" path))
 
-  (send-image [this chat-id url]
-    (http/post (create-endpoint baseUrl token "sendPhoto")
-                 {:form-params {:chat_id chat-id :photo url}}))
+(defn fetch-latest-messages
+  ([config]
+   (-> (http/get (create-endpoint config "getUpdates"))
+       (response-to-json)))
+  ([config offset]
+   (-> (http/get (create-endpoint config "getUpdates")
+                 {:query-params {"offset" (inc offset)}})
+       (response-to-json))))
 
-  (send-message [this chat-id txt]
-    (http/post (create-endpoint baseUrl token "sendMessage")
-                 {:form-params {:chat_id chat-id :text txt}})))
+(defn send-image [config chat-id url]
+  (-> (http/post (create-endpoint config "sendPhoto")
+                 {:form-params {:chat_id chat-id :photo url}})
+      (response-to-json)))
 
-
-(defn create-client
-  ([baseUrl token]
-   (Client. baseUrl token))
-  ([token]
-   (Client. "https://api.telegram.org/bot" token)))
+(defn send-message [config chat-id txt]
+  (-> (http/post (create-endpoint config "sendMessage")
+                 {:form-params {:chat_id chat-id :text txt}})
+      (response-to-json)))
