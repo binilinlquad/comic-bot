@@ -52,6 +52,11 @@
         :send-text (telegram/send-message chat-id (:text cmd))
         :send-image (telegram/send-image chat-id (:img-url cmd))))))
 
+(defn get-latest-update-id [latest-messages-resp]
+  (->  (get latest-messages-resp "result")
+       (last)
+       (get "update_id")))
+
 (defn bot-polling []
   (loop [latest-update-id nil]
     (let [updates (if latest-update-id
@@ -62,9 +67,7 @@
           (bot-convert-messages-to-commands)
           (bot-handle-cmd))
       (Thread/sleep (* 1 60 1000))
-      (recur (->  (get updates "result")
-                  (last)
-                  (get "update_id"))))))
+      (recur (get-latest-update-id updates)))))
 
 (defn -main []
   (do (telegram/configure {:token bot-token})
