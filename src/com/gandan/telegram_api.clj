@@ -6,8 +6,10 @@
   {:base-url "https://api.telegram.org/bot"
    :token "put-your-api-token"})
 
-(defn config [config]
-  (merge base-config config))
+(def config (ref base-config))
+
+(defn configure [conf]
+  (dosync (alter config merge conf)))
 
 (defn- response-to-json [response]
   (cheshire/parse-string (:body response)))
@@ -16,20 +18,20 @@
   (str (:base-url config) (:token config) "/" path))
 
 (defn fetch-latest-messages
-  ([config]
-   (-> (http/get (create-endpoint config "getUpdates"))
+  ([]
+   (-> (http/get (create-endpoint @config "getUpdates"))
        (response-to-json)))
-  ([config offset]
-   (-> (http/get (create-endpoint config "getUpdates")
+  ([offset]
+   (-> (http/get (create-endpoint @config "getUpdates")
                  {:query-params {"offset" (inc offset)}})
        (response-to-json))))
 
-(defn send-image [config chat-id url]
-  (-> (http/post (create-endpoint config "sendPhoto")
+(defn send-image [chat-id url]
+  (-> (http/post (create-endpoint @config "sendPhoto")
                  {:form-params {:chat_id chat-id :photo url}})
       (response-to-json)))
 
-(defn send-message [config chat-id txt]
-  (-> (http/post (create-endpoint config "sendMessage")
+(defn send-message [chat-id txt]
+  (-> (http/post (create-endpoint @config "sendMessage")
                  {:form-params {:chat_id chat-id :text txt}})
       (response-to-json)))

@@ -7,8 +7,6 @@
 ; Related Telegram Bot API communication
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
-(def telegram-config (telegram/config {:token bot-token}))
-
 (defn parse-telegram-updates [updates]
   (loop [[upd & rst] updates
          result []]
@@ -51,14 +49,14 @@
   (doseq [cmd commands]
     (let [chat-id (:chat-id cmd)]
       (condp #(= %1 %2) (:cmd cmd)
-        :send-text (telegram/send-message telegram-config chat-id (:text cmd))
-        :send-image (telegram/send-image telegram-config chat-id (:img-url cmd))))))
+        :send-text (telegram/send-message chat-id (:text cmd))
+        :send-image (telegram/send-image chat-id (:img-url cmd))))))
 
 (defn bot-polling []
   (loop [latest-update-id nil]
     (let [updates (if latest-update-id
-                    (telegram/fetch-latest-messages telegram-config latest-update-id)
-                    (telegram/fetch-latest-messages telegram-config))]
+                    (telegram/fetch-latest-messages latest-update-id)
+                    (telegram/fetch-latest-messages))]
       (-> (get updates "result")
           (parse-telegram-updates)
           (bot-convert-messages-to-commands)
@@ -69,4 +67,5 @@
                   (get "update_id"))))))
 
 (defn -main []
-  (bot-polling))
+  (do (telegram/configure {:token bot-token})
+      (bot-polling)))
