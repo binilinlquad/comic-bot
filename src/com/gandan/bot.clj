@@ -40,9 +40,9 @@
            (condp #(= %1 %2) text
              "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
              "/latest" (->> (xkcd/fetch-latest-comic)
-                           (parse-xkcd-latest-resp)
-                           (:img)
-                           (bot-send-img-cmd chat-id)))))
+                            (parse-xkcd-latest-resp)
+                            (:img)
+                            (bot-send-img-cmd chat-id)))))
        messages))
 
 (defn bot-handle-cmd [commands]

@@ -9,4 +9,4 @@
           first-command (nth commands 0)
           second-command (nth commands 1)]
       (is (= {:cmd :send-text :chat-id 1 :text "Welcome to prototype comic bot!"} first-command))
-      (is (and (= (:cmd second-command) :send-image ) (:img-url second-command))))))
+      (is (and (= (:cmd second-command) :send-image) (:img-url second-command))))))

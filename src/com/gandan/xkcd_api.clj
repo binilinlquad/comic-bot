@@ -6,5 +6,5 @@
   (cheshire/parse-string (:body response)))
 
 (defn fetch-latest-comic []
-   (-> (client/get "https://xkcd.com/info.0.json")
-       (response-to-json)))
+  (-> (client/get "https://xkcd.com/info.0.json")
+      (response-to-json)))
