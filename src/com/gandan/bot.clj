@@ -1,6 +1,8 @@
 (ns com.gandan.bot
   (:require [clj-http.client :as client]
             [clojure.pprint :as pprint]
+            [clojure.tools.logging :as log]
+            [clojure.string :refer [blank?]]
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
@@ -59,6 +61,7 @@
 
 (defn bot-polling []
   (loop [latest-update-id nil]
+    (log/info "fetch and process latest messages")
     (let [updates (if latest-update-id
                     (telegram/fetch-latest-messages latest-update-id)
                     (telegram/fetch-latest-messages))]
@@ -66,9 +69,14 @@
           (parse-telegram-updates)
           (bot-convert-messages-to-commands)
           (bot-handle-cmd))
+      (log/info "sleep 1 minute")
       (Thread/sleep (* 1 60 1000))
       (recur (get-latest-update-id updates)))))
 
 (defn -main []
-  (do (telegram/configure {:token bot-token})
-      (bot-polling)))
+  (do (log/info "Start up Bot")
+      (if (blank? bot-token) (log/fatal "Bot token is not set!"))
+      (telegram/configure {:token bot-token})
+      (log/info "fetch and process latest chat messages by polling")
+      (bot-polling))
+      (log/info "Shut down Bot"))
