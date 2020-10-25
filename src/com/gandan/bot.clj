@@ -40,23 +40,17 @@
       parse-xkcd-latest-resp
       :img))
 
-(defn bot-convert-messages-to-commands [messages]
-  (map (fn [msg]
-         (let [chat-id (:chat-id msg)
-               text (:text msg)]
-           (condp #(= %1 %2) text
-             "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
-             "/latest" (bot-send-img-cmd chat-id (latest-xkcd-strip))
-             {})))
-       messages))
+(defn process-msg [msg]
+  (let [chat-id (:chat-id msg)
+        text (:text msg)]
+    (condp #(= %1 %2) text
+      "/start" (telegram/send-message chat-id  "Welcome to prototype comic bot!")
+      "/latest" (telegram/send-image chat-id (latest-xkcd-strip))
+      {})))
 
-(defn bot-handle-cmd [commands]
-  (doseq [cmd commands]
-    (let [chat-id (:chat-id cmd)]
-      (condp #(= %1 %2) (:cmd cmd)
-        :send-text (telegram/send-message chat-id (:text cmd))
-        :send-image (telegram/send-image chat-id (:img-url cmd))
-        {}))))
+(defn process-messages [messages]
+  (doseq [msg messages]
+    (process-msg msg)))
 
 (defn get-latest-update-id [latest-messages-resp]
   (->  (get latest-messages-resp "result")
@@ -78,8 +72,7 @@
 (defn bot-polling []
   (polling-latest-updates
     parse-telegram-updates
-    bot-convert-messages-to-commands
-    bot-handle-cmd))
+    process-messages))
 
 (defn -main []
   (do (log/info "Start up Bot")
