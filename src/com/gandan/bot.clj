@@ -44,7 +44,8 @@
              "/latest" (->> (xkcd/fetch-latest-comic)
                             (parse-xkcd-latest-resp)
                             (:img)
-                            (bot-send-img-cmd chat-id)))))
+                            (bot-send-img-cmd chat-id))
+             {})))
        messages))
 
 (defn bot-handle-cmd [commands]
@@ -52,7 +53,8 @@
     (let [chat-id (:chat-id cmd)]
       (condp #(= %1 %2) (:cmd cmd)
         :send-text (telegram/send-message chat-id (:text cmd))
-        :send-image (telegram/send-image chat-id (:img-url cmd))))))
+        :send-image (telegram/send-image chat-id (:img-url cmd))
+        {}))))
 
 (defn get-latest-update-id [latest-messages-resp]
   (->  (get latest-messages-resp "result")
