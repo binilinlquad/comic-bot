@@ -35,16 +35,18 @@
    :chat-id chat-id
    :img-url img-url})
 
+(defn latest-xkcd-strip []
+  (-> (xkcd/fetch-latest-comic)
+      parse-xkcd-latest-resp
+      :img))
+
 (defn bot-convert-messages-to-commands [messages]
   (map (fn [msg]
          (let [chat-id (:chat-id msg)
                text (:text msg)]
            (condp #(= %1 %2) text
              "/start" (bot-send-msg-cmd chat-id  "Welcome to prototype comic bot!")
-             "/latest" (->> (xkcd/fetch-latest-comic)
-                            (parse-xkcd-latest-resp)
-                            (:img)
-                            (bot-send-img-cmd chat-id))
+             "/latest" (bot-send-img-cmd chat-id (latest-xkcd-strip))
              {})))
        messages))
 
