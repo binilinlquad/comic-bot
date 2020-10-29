@@ -52,6 +52,9 @@
   (doseq [msg messages]
     (process-msg msg)))
 
+(defn improved-process-messages [messages]
+  (dorun (pmap process-msg messages)))
+
 (defn get-latest-update-id [latest-messages-resp]
   (->  (get latest-messages-resp "result")
        (last)
@@ -72,7 +75,7 @@
 (defn bot-polling []
   (polling-latest-updates
     parse-telegram-updates
-    process-messages))
+    improved-process-messages))
 
 (defn -main []
   (do (log/info "Start up Bot")
