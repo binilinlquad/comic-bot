@@ -1,7 +1,5 @@
 (ns com.gandan.bot
-  (:require [clj-http.client :as client]
-            [clojure.pprint :as pprint]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
