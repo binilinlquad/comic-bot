@@ -41,10 +41,12 @@
 (defn process-msg [msg]
   (let [chat-id (:chat-id msg)
         text (:text msg)]
+    (log/debug (str "Start processing message " msg))
     (condp #(= %1 %2) text
       "/start" (telegram/send-message chat-id  "Welcome to prototype comic bot!")
       "/latest" (telegram/send-image chat-id (latest-xkcd-strip))
-      {})))
+      {})
+    (log/debug (str "Finish processing message " msg))))
 
 (defn process-messages [messages]
   (doseq [msg messages]
@@ -66,7 +68,7 @@
                     (telegram/fetch-latest-messages))]
       (-> (get updates# "result")
           ~@forms)
-      (log/info "next poll in 1 minute")
+      (log/info "next fetch in 1 minute")
       (Thread/sleep (* 1 60 1000))      
       (recur (get-latest-update-id updates#)))))
 
@@ -76,9 +78,8 @@
     improved-process-messages))
 
 (defn -main []
-  (do (log/info "Start up Bot")
-      (if (blank? bot-token) (log/fatal "Bot token is not set!"))
-      (telegram/configure {:token bot-token})
-      (log/info "fetch and process latest chat messages by polling")
-      (bot-polling))
-      (log/info "Shut down Bot"))
+  (log/info "Start up Bot")
+  (if (blank? bot-token) (log/fatal "Bot token is not set!"))
+  (telegram/configure {:token bot-token})
+  (bot-polling))
+  (log/info "Shut down Bot")
