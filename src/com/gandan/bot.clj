@@ -79,7 +79,7 @@
 
 (defn -main []
   (log/info "Start up Bot")
-  (if (blank? bot-token) (log/fatal "Bot token is not set!"))
+  (assert (not (blank? bot-token)) "Bot token is not set!")
   (telegram/configure {:token bot-token})
   (bot-polling))
   (log/info "Shut down Bot")
