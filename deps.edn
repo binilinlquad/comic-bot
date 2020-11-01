@@ -3,11 +3,15 @@
   cheshire/cheshire {:mvn/version "5.10.0"}
   org.clojure/tools.logging {:mvn/version "1.1.0"}
   ch.qos.logback/logback-classic {:mvn/version "1.2.3"}}
-
+ 
+ :paths ["src/main" "resources/main"]
+ 
  :aliases
  {;; clj -Mmain # run bot 
   :main {:main-opts ["-m com.gandan.bot"]}
-
+  
+  :debug {:extra-paths ["resources/debug"]}
+  
   :test {:extra-paths ["test"]
          :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.632"}}}
 
