@@ -19,8 +19,8 @@ Try interacting with bot by send chat message to contact ComicBot in Telegram:
 Comic-Bot is using [clj-http](https://github.com/dakrone/clj-http) to poll  any new recognized message and respond accordingly. It runs on single thread.
 
 ## TODO
-- [ ] Print bot status
-- [ ] reply message/picture asynchronously
+- [x] Print bot status
+- [x] reply message/picture asynchronously
 - [ ] improve tests
 
 ## Disclaimer
