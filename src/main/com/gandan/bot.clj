@@ -69,7 +69,7 @@
       (-> (get updates# "result")
           ~@forms)
       (log/info "next fetch in 1 minute")
-      (Thread/sleep (* 1 60 1000))      
+      (Thread/sleep (* 1 60 1000))
       (recur (get-latest-update-id updates#)))))
 
 (defn bot-polling []
