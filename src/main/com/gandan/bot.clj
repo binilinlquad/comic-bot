@@ -62,24 +62,24 @@
 
 (defmacro polling-latest-updates [& forms]
   `(loop [latest-update-id# nil]
-    (log/info "fetch and process latest chats")
-    (let [updates# (if latest-update-id#
-                    (telegram/fetch-latest-messages latest-update-id#)
-                    (telegram/fetch-latest-messages))]
-      (-> (get updates# "result")
-          ~@forms)
-      (log/info "next fetch in 1 minute")
-      (Thread/sleep (* 1 60 1000))
-      (recur (get-latest-update-id updates#)))))
+     (log/info "fetch and process latest chats")
+     (let [updates# (if latest-update-id#
+                      (telegram/fetch-latest-messages latest-update-id#)
+                      (telegram/fetch-latest-messages))]
+       (-> (get updates# "result")
+           ~@forms)
+       (log/info "next fetch in 1 minute")
+       (Thread/sleep (* 1 60 1000))
+       (recur (get-latest-update-id updates#)))))
 
 (defn bot-polling []
   (polling-latest-updates
-    parse-telegram-updates
-    improved-process-messages))
+   parse-telegram-updates
+   improved-process-messages))
 
 (defn -main []
   (log/info "Start up Bot")
   (assert (not (blank? bot-token)) "Bot token is not set!")
   (telegram/configure {:token bot-token})
   (bot-polling))
-  (log/info "Shut down Bot")
+(log/info "Shut down Bot")
