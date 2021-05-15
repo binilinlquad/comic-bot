@@ -2,14 +2,11 @@
   (:require [clj-http.client :as http]
             [cheshire.core :as cheshire]))
 
-(def base-config
-  {:base-url "https://api.telegram.org/bot"
-   :token "put-your-api-token"})
-
-(def config (ref base-config))
+(def config (atom {:base-url "https://api.telegram.org/bot"
+              :token "put-your-api-token"}))
 
 (defn configure [conf]
-  (dosync (alter config merge conf)))
+  (dosync (swap! config merge conf)))
 
 (defn- response-to-json [response]
   (cheshire/parse-string (:body response)))
