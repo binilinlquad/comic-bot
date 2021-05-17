@@ -8,14 +8,11 @@
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
 (defn parse-telegram-updates [updates]
-  (loop [[upd & rst] updates
-         result []]
-    (if upd
-      (->> {:chat-id (get-in upd ["message" "chat" "id"])
-            :text (get-in upd ["message" "text"])}
-           (conj result)
-           (recur rst))
-      result)))
+  (into [] 
+        (map (fn [upd] 
+               {:chat-id (get-in upd ["message" "chat" "id"]) 
+                :text (get-in upd ["message" "text"])}))
+        updates))
 
 ; Related Xkcd API communication
 (defn parse-xkcd-latest-resp [json]
