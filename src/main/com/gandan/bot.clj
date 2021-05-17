@@ -22,17 +22,6 @@
   {:img (get json "img")
    :title (get json "title")})
 
-; Bot processing and logic
-(defn bot-send-msg-cmd [chat-id msg]
-  {:cmd :send-text
-   :chat-id chat-id
-   :text msg})
-
-(defn bot-send-img-cmd [chat-id img-url]
-  {:cmd :send-image
-   :chat-id chat-id
-   :img-url img-url})
-
 (defn latest-xkcd-strip []
   (-> (xkcd/fetch-latest-comic)
       parse-xkcd-latest-resp
