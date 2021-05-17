@@ -5,8 +5,6 @@
             [com.gandan.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
-(def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
-
 (defn parse-telegram-updates [updates]
   "Convert telegram latest chat to map only included required values"
   (into [] 
@@ -61,7 +59,8 @@
 
 (defn -main []
   (log/info "Start up Bot")
-  (assert (not (blank? bot-token)) "Bot token is not set!")
-  (telegram/configure {:token bot-token})
-  (bot-polling))
-(log/info "Shut down Bot")
+  (let [bot-token (System/getenv "TELEGRAM_BOT_TOKEN")]
+    (assert (not (blank? bot-token)) "Bot token is not set!")
+    (telegram/configure {:token bot-token})
+    (bot-polling))
+  (log/info "Shut down Bot"))
