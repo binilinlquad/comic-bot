@@ -8,21 +8,17 @@
 (def bot-token (System/getenv "TELEGRAM_BOT_TOKEN"))
 
 (defn parse-telegram-updates [updates]
+  "Convert telegram latest chat to map only included required values"
   (into [] 
         (map (fn [upd] 
                {:chat-id (get-in upd ["message" "chat" "id"]) 
                 :text (get-in upd ["message" "text"])}))
         updates))
 
-; Related Xkcd API communication
-(defn parse-xkcd-latest-resp [json]
-  {:img (get json "img")
-   :title (get json "title")})
-
 (defn latest-xkcd-strip []
+  "Get latest comic strip url from xkcd"
   (-> (xkcd/fetch-latest-comic)
-      parse-xkcd-latest-resp
-      :img))
+      (get "img")))
 
 (defn process-msg [msg]
   (let [chat-id (:chat-id msg)
