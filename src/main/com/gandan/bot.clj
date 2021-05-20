@@ -28,10 +28,6 @@
       {})
     (log/debug (str "Finish processing message " msg))))
 
-(defn process-messages [messages]
-  (doseq [msg messages]
-    (process-msg msg)))
-
 (defn improved-process-messages [messages]
   (dorun (pmap process-msg messages)))
 
