@@ -5,27 +5,40 @@
             [com.gandan.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
+(defn message->dto [message]
+   {:chat-id (get-in message ["message" "chat" "id"]) 
+    :text (get-in message ["message" "text"])})
+
+(defn find-latest-update-id [updates]
+  (get (last updates) "update_id"))
+
 (defn parse-telegram-updates [updates]
   "Convert telegram latest chat to map only included required values"
-  (into [] 
-        (map (fn [upd] 
-               {:chat-id (get-in upd ["message" "chat" "id"]) 
-                :text (get-in upd ["message" "text"])}))
-        updates))
+  (into [] (map message->dto updates)))
+
+(defn telegram-updates->dto [updates]
+  {:latest-update-id (find-latest-update-id updates)
+   :incoming-messages (into [] message->dto updates)})
 
 (defn latest-xkcd-strip []
   "Get latest comic strip url from xkcd"
   (-> (xkcd/fetch-latest-comic)
       (get "img")))
 
+(def table-commands
+  "Table of comic-bot command and its handler"
+  {"/start" #(telegram/send-message % "Welcome to prototype comic bot!"),
+   "/latest" #(telegram/send-image % (latest-xkcd-strip))})
+
+(defn command->handler [command]
+  "Get handler for given command or default handler not registered command"
+  (get table-commands command #({})))
+
 (defn process-msg [msg]
   (let [chat-id (:chat-id msg)
         text (:text msg)]
     (log/debug (str "Start processing message " msg))
-    (condp #(= %1 %2) text
-      "/start" (telegram/send-message chat-id  "Welcome to prototype comic bot!")
-      "/latest" (telegram/send-image chat-id (latest-xkcd-strip))
-      {})
+    ((command->handler text) chat-id)
     (log/debug (str "Finish processing message " msg))))
 
 (defn improved-process-messages [messages]
@@ -49,9 +62,7 @@
        (recur (get-latest-update-id updates#)))))
 
 (defn bot-polling []
-  (polling-latest-updates
-   parse-telegram-updates
-   improved-process-messages))
+  (polling-latest-updates parse-telegram-updates improved-process-messages))
 
 (defn -main []
   (log/info "Start up Bot")
