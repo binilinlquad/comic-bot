@@ -1,13 +1,14 @@
 (ns com.gandan.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
+            [clojure.core.async :as async]
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
 (defn message->dto [message]
-   {:chat-id (get-in message ["message" "chat" "id"]) 
-    :text (get-in message ["message" "text"])})
+  {:chat-id (get-in message ["message" "chat" "id"])
+   :text (get-in message ["message" "text"])})
 
 (defn find-latest-update-id [updates]
   (get (last updates) "update_id"))
@@ -54,18 +55,20 @@
     (telegram/fetch-latest-messages latest-update-id)
     (telegram/fetch-latest-messages)))
 
-(defmacro polling-latest-updates [& forms]
-  `(loop [latest-update-id# nil]
-     (log/info "fetch and process latest chats")
-     (let [updates# (fetch-latest-messages latest-update-id#)]
-       (-> (get updates# "result")
-           ~@forms)
-       (log/info "next fetch in 1 minute")
-       (Thread/sleep (* 1 60 1000))
-       (recur (get-latest-update-id updates#)))))
+(defonce server-chan (atom nil))
 
 (defn bot-polling []
-  (polling-latest-updates parse-telegram-updates improved-process-messages))
+  (async/go-loop [latest-update-id nil]
+    (log/info "fetch and process latest chats")
+    (let [updates (fetch-latest-messages latest-update-id)]
+      (-> (get updates "result")
+          parse-telegram-updates
+          improved-process-messages)
+      (log/info "next fetch in 1 minute")
+      (let [[v ch] (async/alts! [@server-chan (async/timeout 60000)])]
+        (if (= ch @server-chan)
+          (do (log/info "Shut down Bot") nil)
+          (recur (get-latest-update-id updates)))))))
 
 (defn start
   ([]
@@ -74,10 +77,14 @@
    (assert (not (blank? bot-token)) "Bot token is not set!")
    (log/info "Start up Bot")
    (telegram/configure {:token bot-token})
-   (bot-polling)))
+   (swap! server-chan
+          (fn [_] (let [c (async/chan)]
+                     (bot-polling)
+                     c)))))
 
 (defn stop []
-  (log/info "Shut down Bot"))
+  (swap! server-chan
+         (fn [chan] (async/go (async/>! chan :stop)))))
 
 (defn -main []
   (start))
