@@ -49,12 +49,15 @@
        (last)
        (get "update_id")))
 
+(defn fetch-latest-messages [latest-update-id]
+  (if latest-update-id
+    (telegram/fetch-latest-messages latest-update-id)
+    (telegram/fetch-latest-messages)))
+
 (defmacro polling-latest-updates [& forms]
   `(loop [latest-update-id# nil]
      (log/info "fetch and process latest chats")
-     (let [updates# (if latest-update-id#
-                      (telegram/fetch-latest-messages latest-update-id#)
-                      (telegram/fetch-latest-messages))]
+     (let [updates# (fetch-latest-messages latest-update-id#)]
        (-> (get updates# "result")
            ~@forms)
        (log/info "next fetch in 1 minute")
