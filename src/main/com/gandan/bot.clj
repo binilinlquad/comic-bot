@@ -25,14 +25,14 @@
   (-> (xkcd/fetch-latest-comic)
       (get "img")))
 
-(def table-commands
+(def table-command-to-handler
   "Table of comic-bot command and its handler"
   {"/start" #(telegram/send-message % "Welcome to prototype comic bot!"),
    "/latest" #(telegram/send-image % (latest-xkcd-strip))})
 
 (defn command->handler [command]
   "Get handler for given command or default handler not registered command"
-  (get table-commands command #({})))
+  (get table-command-to-handler command #({})))
 
 (defn process-msg [msg]
   (let [chat-id (:chat-id msg)
