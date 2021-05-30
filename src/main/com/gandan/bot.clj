@@ -1,7 +1,7 @@
 (ns com.gandan.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
-            [clojure.core.async :as async]
+            [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
             [com.gandan.telegram-api :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
@@ -58,14 +58,14 @@
 (defonce server-chan (atom nil))
 
 (defn bot-polling []
-  (async/go-loop [latest-update-id nil]
+  (go-loop [latest-update-id nil]
     (log/info "fetch and process latest chats")
     (let [updates (fetch-latest-messages latest-update-id)]
       (-> (get updates "result")
           parse-telegram-updates
           improved-process-messages)
       (log/info "next fetch in 1 minute")
-      (let [[v ch] (async/alts! [@server-chan (async/timeout 60000)])]
+      (let [[v ch] (alts! [@server-chan (timeout 60000)])]
         (if (= ch @server-chan)
           (do (log/info "Shut down Bot") nil)
           (recur (get-latest-update-id updates)))))))
@@ -78,13 +78,13 @@
    (log/info "Start up Bot")
    (telegram/configure {:token bot-token})
    (swap! server-chan
-          (fn [_] (let [c (async/chan)]
+          (fn [_] (let [c (chan)]
                      (bot-polling)
                      c)))))
 
 (defn stop []
   (swap! server-chan
-         (fn [chan] (async/go (async/>! chan :stop)))))
+         (fn [chan] (go (>! chan :stop)))))
 
 (defn -main []
   (start))
