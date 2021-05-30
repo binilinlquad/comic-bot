@@ -67,12 +67,14 @@
 (defn bot-polling []
   (polling-latest-updates parse-telegram-updates improved-process-messages))
 
-(defn start []
-  (log/info "Start up Bot")
-  (let [bot-token (System/getenv "TELEGRAM_BOT_TOKEN")]
-    (assert (not (blank? bot-token)) "Bot token is not set!")
-    (telegram/configure {:token bot-token})
-    (bot-polling)))
+(defn start
+  ([]
+   (start (System/getenv "TELEGRAM_BOT_TOKEN")))
+  ([bot-token]
+   (assert (not (blank? bot-token)) "Bot token is not set!")
+   (log/info "Start up Bot")
+   (telegram/configure {:token bot-token})
+   (bot-polling)))
 
 (defn stop []
   (log/info "Shut down Bot"))
