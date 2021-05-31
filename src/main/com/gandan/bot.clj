@@ -58,6 +58,7 @@
 (defonce server-chan (atom nil))
 
 (defn bot-polling []
+  (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
     (log/info "fetch and process latest chats")
     (let [updates (fetch-latest-messages latest-update-id)]
@@ -75,12 +76,9 @@
    (start (System/getenv "TELEGRAM_BOT_TOKEN")))
   ([bot-token]
    (assert (not (blank? bot-token)) "Bot token is not set!")
-   (log/info "Start up Bot")
    (telegram/configure {:token bot-token})
-   (swap! server-chan
-          (fn [_] (let [c (chan)]
-                     (bot-polling)
-                     c)))))
+   (bot-polling)
+   (swap! server-chan (fn [_] (chan)))))
 
 (defn stop []
   (swap! server-chan
