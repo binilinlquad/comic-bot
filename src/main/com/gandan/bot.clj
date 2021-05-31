@@ -42,7 +42,7 @@
     ((command->handler text) chat-id)
     (log/debug (str "Finish processing message " msg))))
 
-(defn improved-process-messages [messages]
+(defn process-messages-with-pmap [messages]
   (dorun (pmap process-msg messages)))
 
 (defn get-latest-update-id [latest-messages-resp]
@@ -64,7 +64,7 @@
     (let [updates (fetch-latest-messages latest-update-id)]
       (-> (get updates "result")
           parse-telegram-updates
-          improved-process-messages)
+          process-messages-with-pmap)
       (log/info "next fetch in 1 minute")
       (let [[v ch] (alts! [@server-chan (timeout 60000)])]
         (if (= ch @server-chan)
