@@ -45,11 +45,6 @@
 (defn process-messages-with-pmap [messages]
   (dorun (pmap process-msg messages)))
 
-(defn get-latest-update-id [latest-messages-resp]
-  (->  (get latest-messages-resp "result")
-       (last)
-       (get "update_id")))
-
 (defn fetch-latest-messages [latest-update-id]
   (if latest-update-id
     (telegram/fetch-latest-messages latest-update-id)
@@ -61,15 +56,14 @@
   (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
     (log/info "fetch and process latest chats")
-    (let [updates (fetch-latest-messages latest-update-id)]
-      (-> (get updates "result")
-          parse-telegram-updates
-          process-messages-with-pmap)
+    (let [updates-response (fetch-latest-messages latest-update-id)
+          result (get updates-response "result")]
+      (process-messages-with-pmap (parse-telegram-updates result))
       (log/info "next fetch in 1 minute")
       (let [[v ch] (alts! [@server-chan (timeout 60000)])]
         (if (= ch @server-chan)
           (do (log/info "Shut down Bot") nil)
-          (recur (get-latest-update-id updates)))))))
+          (recur (get "update_id" (last result))))))))
 
 (defn start
   ([]
