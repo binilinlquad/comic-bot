@@ -13,13 +13,9 @@
 (defn find-latest-update-id [updates]
   (get (last updates) "update_id"))
 
-(defn parse-telegram-updates [updates]
-  "Convert telegram latest chat to map only included required values"
-  (into [] (map message->dto updates)))
-
 (defn telegram-updates->dto [updates]
   {:latest-update-id (find-latest-update-id updates)
-   :incoming-messages (into [] message->dto updates)})
+   :incoming-messages (into [] (map message->dto updates))})
 
 (defn latest-xkcd-strip []
   "Get latest comic strip url from xkcd"
@@ -56,14 +52,15 @@
   (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
     (log/info "fetch and process latest chats")
-    (let [updates-response (fetch-latest-messages latest-update-id)
-          result (get updates-response "result")]
-      (process-messages-with-pmap (parse-telegram-updates result))
+    (let [response (fetch-latest-messages latest-update-id)
+          result (get response "result")
+          m (telegram-updates->dto result)]
+      (process-messages-with-pmap (:incoming-messages m))
       (log/info "next fetch in 1 minute")
       (let [[v ch] (alts! [@server-chan (timeout 60000)])]
         (if (= ch @server-chan)
           (do (log/info "Shut down Bot") nil)
-          (recur (get (last result) "update_id")))))))
+          (recur (:latest-update-id m)))))))
 
 (defn start
   ([]
