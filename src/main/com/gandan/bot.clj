@@ -63,7 +63,7 @@
       (let [[v ch] (alts! [@server-chan (timeout 60000)])]
         (if (= ch @server-chan)
           (do (log/info "Shut down Bot") nil)
-          (recur (get "update_id" (last result))))))))
+          (recur (get (last result) "update_id")))))))
 
 (defn start
   ([]
