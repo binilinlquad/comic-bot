@@ -46,7 +46,7 @@
     (telegram/fetch-latest-messages latest-update-id)
     (telegram/fetch-latest-messages)))
 
-(defonce server-chan (atom nil))
+(defonce bot-chan (atom nil))
 
 (defn bot-polling [fn-process-messages]
   (log/info "Start up Bot")
@@ -57,8 +57,8 @@
           m (telegram-updates->dto result)]
       (fn-process-messages (:incoming-messages m))
       (log/info "next fetch in 1 minute")
-      (let [[v ch] (alts! [@server-chan (timeout 60000)])]
-        (if (= ch @server-chan)
+      (let [[v ch] (alts! [@bot-chan (timeout 60000)])]
+        (if (= ch @bot-chan)
           (do (log/info "Shut down Bot") nil)
           (recur (:latest-update-id m)))))))
 
@@ -69,10 +69,10 @@
    (assert (not (blank? bot-token)) "Bot token is not set!")
    (telegram/configure {:token bot-token})
    (bot-polling process-messages-with-pmap)
-   (swap! server-chan (fn [_] (chan)))))
+   (swap! bot-chan (fn [_] (chan)))))
 
 (defn stop []
-  (swap! server-chan
+  (swap! bot-chan
          (fn [chan] (go (>! chan :stop)))))
 
 (defn -main []
