@@ -8,7 +8,7 @@
  :paths ["src/main" "resources/main"]
 
  :aliases
- {;; clj -Mmain # run bot 
+ {;; clj -M:main # run bot 
   :main {:main-opts ["-m" "com.gandan.bot"]}
 
   :debug {:extra-paths ["resources/debug"]}
