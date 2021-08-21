@@ -69,8 +69,6 @@
   (dosync (ref-set bot nil)))
 
 (defn start
-  ([]
-   (start (System/getenv "TELEGRAM_BOT_TOKEN")))
   ([bot-token]
    (assert (not (blank? bot-token)) "Bot token is not set!")
    (telegram/configure {:token bot-token})
