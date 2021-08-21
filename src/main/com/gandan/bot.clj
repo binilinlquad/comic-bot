@@ -78,5 +78,8 @@
     (if-not (nil? @bot) (stop @bot))
     (ref-set bot (bot-polling process-messages-with-pmap)))))
 
-(defn -main []
-  (start))
+(defn -main [& args]
+  (-> (nth args 0)
+      (or (System/getenv "TELEGRAM_BOT_TOKEN"))
+      (start)))
+
