@@ -5,11 +5,11 @@ Comic-Bot is a simple bot to interact with your favorite web comic.
 It has very limited capabilities and only supports **Xkcd** comic.
 
 # How to Start
-1. Clone this repo.
-2. Provides Telegram Bot API key through enviroment variable TELEGRAM_BOT_TOKEN.
-3. Run `clj -m com.gandan.bot` in your favorite shell.
-4. When run successfully, no output is printed currently.
+There are 2 ways to start:
+1. Run `clj -M:main $TELEGRAM_BOT_TOKEN` in shell where TELEGRAM_BOT_TOKEN is Telegram Bot API key.
+1. Alternative: set enviroment variable TELEGRAM_BOT_TOKEN with Telegram Bot API key then run `clj -M:main`.
 
+# List of Commands
 Try interacting with bot by send chat message to contact ComicBot in Telegram:
 1. `/start` to see welcome message
 1. `/latest` to get latest Xkcd comic strip
