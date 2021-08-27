@@ -17,8 +17,9 @@
   {:latest-update-id (find-latest-update-id updates)
    :incoming-messages (into [] (map message->dto updates))})
 
-(defn latest-xkcd-strip []
+(defn latest-xkcd-strip
   "Get latest comic strip url from xkcd"
+  []
   (-> (xkcd/fetch-latest-comic)
       (get "img")))
 
@@ -27,8 +28,9 @@
   {"/start" #(telegram/send-message % "Welcome to prototype comic bot!"),
    "/latest" #(telegram/send-image % (latest-xkcd-strip))})
 
-(defn command->handler [command]
+(defn command->handler
   "Get handler for given command or default handler not registered command"
+  [command]
   (get table-command-to-handler command #({})))
 
 (defn process-msg [msg]
