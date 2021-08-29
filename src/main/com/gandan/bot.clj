@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
             [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
-            [com.gandan.telegram-api :as telegram]
+            [com.gandan.telegram-client :as telegram]
             [com.gandan.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
