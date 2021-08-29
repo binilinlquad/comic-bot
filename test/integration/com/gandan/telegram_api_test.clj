@@ -2,12 +2,15 @@
   (:require [clojure.test :refer :all]
             [com.gandan.telegram-api :refer :all]))
 
-(defn token-fixture [test-func]
+
+(defn token-fixture
+  "Apply telegram client token from set environment"
+  [test-fun]
   (configure {:token (System/getenv "TELEGRAM_BOT_TOKEN")})
-  (test-func)
+  (test-fun)
   (configure {:token "" }))
 
-(use-fixtures :once #_token-fixture)
+(use-fixtures :once token-fixture)
 
 (deftest integration-test-with-telegram-api
   (testing "fetch latest messages"
