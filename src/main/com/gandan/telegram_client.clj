@@ -11,8 +11,8 @@
 (defn- response-to-json [response]
   (cheshire/parse-string (:body response)))
 
-(defn- create-endpoint [config path]
-  (str (:base-url config) (:token config) "/" path))
+(defn- create-endpoint [{:keys [base-url token]} path]
+  (str base-url token "/" path))
 
 (defn fetch-latest-messages
   ([]
