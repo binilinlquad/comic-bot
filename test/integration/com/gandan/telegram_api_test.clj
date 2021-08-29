@@ -14,15 +14,16 @@
 
 (deftest integration-test-with-telegram-api
   (testing "fetch latest messages"
-    (let [resp (fetch-latest-messages)]
-      (is (get resp "ok"))))
+      (is (get (fetch-latest-messages) "ok")))
 
-  (testing "send image url"
-    (let [resp (send-image 40708419
-                           "https://imgs.xkcd.com/comics/modeling_study.png")]
-      (is (get resp "ok"))))
+  (testing "send image message"
+    (is (get
+         (send-image 40708419
+                     "https://imgs.xkcd.com/comics/modeling_study.png")
+         "ok")))
 
-  (testing "send message"
-    (let [resp (send-message 40708419
-                             "Welcome to prototype comic bot")]
-      (is (get resp "ok")))))
+  (testing "send text message"
+    (is (get
+         (send-message 40708419
+                       "Welcome to prototype comic bot")
+         "ok"))))
