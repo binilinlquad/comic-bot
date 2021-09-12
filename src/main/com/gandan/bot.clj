@@ -48,23 +48,31 @@
     (telegram/fetch-latest-messages latest-update-id)
     (telegram/fetch-latest-messages)))
 
-(defonce bot (ref nil))
-
-(defn bot-polling [fn-process-messages]
+(defn bot-polling [fn-fetcher fn-process-messages poll-interval-ms]
   (log/info "Start up Bot")
   (let [bot-chan (chan)]
     (go-loop [latest-update-id nil]
       (log/info "fetch and process latest chats")
-      (let [response (fetch-latest-messages latest-update-id)
-            result (get response "result")
-            m (telegram-updates->dto result)]
+      (let [m (fn-fetcher latest-update-id)]
         (fn-process-messages (:incoming-messages m))
         (log/info "next fetch in 1 minute")
-        (let [[v ch] (alts! [bot-chan (timeout 60000)])]
+        (let [[v ch] (alts! [bot-chan (timeout poll-interval-ms)])]
           (if (= ch bot-chan)
             (do (log/info "Shut down Bot") nil)
             (recur (:latest-update-id m))))))
     bot-chan))
+
+(defn- spawn-bot
+  []
+  (bot-polling 
+               (fn [latest-fetched-update-id]
+                 (-> (fetch-latest-messageslatest-fetched-update-id)
+                     (get "result")
+                     telegram-updates->dto))
+               process-messages-with-pmap
+               60000))
+
+(defonce bot (ref nil))
 
 (defn stop [bot-chan]
   (go (>! bot-chan :stop))
@@ -76,7 +84,7 @@
    (telegram/configure {:token bot-token})
    (dosync
     (if-not (nil? @bot) (stop @bot))
-    (ref-set bot (bot-polling process-messages-with-pmap)))))
+    (ref-set bot (spawn-bot)))))
 
 (defn -main [& args]
   (-> (nth args 0)
