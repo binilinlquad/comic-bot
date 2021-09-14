@@ -34,9 +34,9 @@
   (get table-command-to-handler command #({})))
 
 (defn process-msg [{keys [chat-id text]} :as msg]
-    (log/debug (str "Start processing message " msg))
-    ((command->handler text) chat-id)
-    (log/debug (str "Finish processing message " msg)))
+  (log/debug (str "Start processing message " msg))
+  ((command->handler text) chat-id)
+  (log/debug (str "Finish processing message " msg)))
 
 (defn fetch-latest-messages [latest-update-id]
   (if latest-update-id
@@ -59,13 +59,13 @@
 
 (defn- spawn-bot
   []
-  (bot-polling 
-               (fn [latest-fetched-update-id]
-                 (-> (fetch-latest-messageslatest-fetched-update-id)
-                     (get "result")
-                     telegram-updates->dto))
-               #(dorun (pmap process-msg %1))
-               60000))
+  (bot-polling
+   (fn [latest-fetched-update-id]
+     (-> (fetch-latest-messageslatest-fetched-update-id)
+         (get "result")
+         telegram-updates->dto))
+   #(dorun (pmap process-msg %1))
+   60000))
 
 (defonce bot (ref nil))
 
