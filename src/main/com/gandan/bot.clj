@@ -33,9 +33,7 @@
   [command]
   (get table-command-to-handler command #({})))
 
-(defn process-msg [msg]
-  (let [chat-id (:chat-id msg)
-        text (:text msg)]
+(defn process-msg [{keys [chat-id text]} :as msg]
     (log/debug (str "Start processing message " msg))
     ((command->handler text) chat-id)
     (log/debug (str "Finish processing message " msg))))
