@@ -36,10 +36,7 @@
 (defn process-msg [{keys [chat-id text]} :as msg]
     (log/debug (str "Start processing message " msg))
     ((command->handler text) chat-id)
-    (log/debug (str "Finish processing message " msg))))
-
-(defn process-messages-with-pmap [messages]
-  (dorun (pmap process-msg messages)))
+    (log/debug (str "Finish processing message " msg)))
 
 (defn fetch-latest-messages [latest-update-id]
   (if latest-update-id
@@ -67,7 +64,7 @@
                  (-> (fetch-latest-messageslatest-fetched-update-id)
                      (get "result")
                      telegram-updates->dto))
-               process-messages-with-pmap
+               #(dorun (pmap process-msg %1))
                60000))
 
 (defonce bot (ref nil))
