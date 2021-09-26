@@ -1,9 +1,9 @@
-(ns com.gandan.bot
+(ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
             [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
-            [com.gandan.telegram-client :as telegram]
-            [com.gandan.xkcd-api :as xkcd]))
+            [com.gandan.comic-bot.telegram-client :as telegram]
+            [com.gandan.comic-bot.xkcd-api :as xkcd]))
 
 ; Related Telegram Bot API communication
 (defn message->dto [message]

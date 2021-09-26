@@ -9,7 +9,7 @@
 
  :aliases
  {;; clj -M:main # run bot 
-  :main {:main-opts ["-m" "com.gandan.bot"]}
+  :main {:main-opts ["-m" "com.gandan.comic-bot.bot"]}
 
   :debug {:extra-paths ["resources/debug"]}
 
@@ -22,3 +22,4 @@
         :main-opts ["-m" "cljfmt-runner.check"]}
 
   :fmt/fix {:main-opts ["-m" "cljfmt-runner.fix"]}}}
+ 

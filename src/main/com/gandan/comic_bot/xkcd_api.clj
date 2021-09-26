@@ -1,4 +1,4 @@
-(ns com.gandan.xkcd-api
+(ns com.gandan.comic-bot.xkcd-api
   (:require [clj-http.client :as client]
             [cheshire.core :as cheshire]))
 

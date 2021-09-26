@@ -1,4 +1,4 @@
-(ns com.gandan.telegram-client
+(ns com.gandan.comic-bot.telegram-client
   (:require [clj-http.client :as http]
             [cheshire.core :as cheshire]))
 

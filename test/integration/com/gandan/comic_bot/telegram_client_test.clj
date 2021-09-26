@@ -1,6 +1,6 @@
-(ns com.gandan.telegram-client-test
+(ns com.gandan.comic-bot.telegram-client-test
   (:require [clojure.test :refer :all]
-            [com.gandan.telegram-client :refer :all]))
+            [com.gandan.comic-bot.telegram-client :refer :all]))
 
 
 (defn token-fixture
