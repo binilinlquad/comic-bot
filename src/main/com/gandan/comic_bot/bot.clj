@@ -31,12 +31,13 @@
 (defn command->handler
   "Get handler for given command or default handler not registered command"
   [command]
-  (get table-command-to-handler command #({})))
+  (get table-command-to-handler command (fn [_] {})))
 
-(defn process-msg [{keys [chat-id text]} :as msg]
-  (log/debug (str "Start processing message " msg))
-  ((command->handler text) chat-id)
-  (log/debug (str "Finish processing message " msg)))
+(defn process-msg [msg]
+  (let [{:keys [chat-id text]} msg]
+    (log/debug (str "Start processing message " msg))
+    ((command->handler text) chat-id)
+    (log/debug (str "Finish processing message " msg))))
 
 (defn fetch-latest-messages [latest-update-id]
   (if latest-update-id
@@ -61,7 +62,7 @@
   []
   (bot-polling
    (fn [latest-fetched-update-id]
-     (-> (fetch-latest-messageslatest-fetched-update-id)
+     (-> (fetch-latest-messages latest-fetched-update-id)
          (get "result")
          telegram-updates->dto))
    #(dorun (pmap process-msg %1))
