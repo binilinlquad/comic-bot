@@ -82,8 +82,16 @@
     (if-not (nil? @bot) (stop @bot))
     (ref-set bot (spawn-bot)))))
 
+(defn ask-stop
+  []
+  (println "Enter 'y' to shutdown")
+  (while (not= "y" (read-line))
+    (println "Enter 'y' (without ') to shutdown"))
+  (stop @bot))
+
 (defn -main [& args]
   (-> (nth args 0)
       (or (System/getenv "TELEGRAM_BOT_TOKEN"))
-      (start)))
+      (start))
+  (ask-stop))
 
