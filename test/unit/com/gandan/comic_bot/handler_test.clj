@@ -12,6 +12,6 @@
   (testing "Add handler"
     (is
      (= true
-        (do (add-handler "/start" (fn [_] true))
+        (do (add-handlers {"/start" (fn [_] true)})
             ((get-handler "/start") nil))))))
 
