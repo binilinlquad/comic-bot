@@ -3,7 +3,8 @@
             [clojure.string :refer [blank?]]
             [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
             [com.gandan.comic-bot.telegram-client :as telegram]
-            [com.gandan.comic-bot.xkcd-api :as xkcd]))
+            [com.gandan.comic-bot.xkcd-api :as xkcd]
+            [com.gandan.comic-bot.handler :as bot-handler]))
 
 ; Related Telegram Bot API communication
 (defn message->dto [message]
@@ -23,20 +24,15 @@
   (-> (xkcd/fetch-latest-comic)
       (get "img")))
 
-(def table-command-to-handler
-  "Table of comic-bot command and its handler"
+(bot-handler/add-handlers
   {"/start" #(telegram/send-message % "Welcome to prototype comic bot!"),
    "/latest" #(telegram/send-image % (latest-xkcd-strip))})
-
-(defn command->handler
-  "Get handler for given command or default handler not registered command"
-  [command]
-  (get table-command-to-handler command (fn [_] {})))
 
 (defn process-msg [msg]
   (let [{:keys [chat-id text]} msg]
     (log/debug (str "Start processing message " msg))
-    ((command->handler text) chat-id)
+    (if-let [handler (bot-handler/get-handler text)]
+      (handler chat-id))
     (log/debug (str "Finish processing message " msg))))
 
 (defn fetch-latest-messages [latest-update-id]
