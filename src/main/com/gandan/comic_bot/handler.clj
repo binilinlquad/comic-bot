@@ -1,4 +1,5 @@
-(ns com.gandan.comic-bot.handler)
+(ns com.gandan.comic-bot.handler
+  (:require [clojure.string :refer [split]]))
 
 (def handlers (atom {}))
 
@@ -9,3 +10,6 @@
   (if-let [handler (get @handlers command)]
     handler
     (fn [_] nil)))
+
+(defn parse-incoming-text [txt]
+  (split txt #"\s" 2))
