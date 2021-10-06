@@ -25,14 +25,15 @@
       (get "img")))
 
 (bot-handler/add-handlers
-  {"/start" #(telegram/send-message % "Welcome to prototype comic bot!"),
-   "/latest" #(telegram/send-image % (latest-xkcd-strip))})
+ {"/start" (fn [chat-id _] (telegram/send-message chat-id "Welcome to prototype comic bot!")),
+  "/latest" (fn [chat-id _] (telegram/send-image chat-id (latest-xkcd-strip)))})
 
 (defn process-msg [msg]
   (let [{:keys [chat-id text]} msg]
     (log/debug (str "Start processing message " msg))
-    (if-let [handler (bot-handler/get-handler text)]
-      (handler chat-id))
+    (let [[cmd arg] (bot-handler/parse-incoming-text text)]
+      (if-let [handler (bot-handler/get-handler cmd)]
+        (handler chat-id arg)))
     (log/debug (str "Finish processing message " msg))))
 
 (defn fetch-latest-messages [latest-update-id]

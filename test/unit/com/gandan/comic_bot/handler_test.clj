@@ -7,13 +7,13 @@
     (let [handler (get-handler "/nop")]
       (is
        (= nil 
-          (handler nil)))))
+          (handler nil nil)))))
 
   (testing "Add handler"
     (is
-     (= true
-        (do (add-handlers {"/start" (fn [_] true)})
-            ((get-handler "/start") nil))))))
+     (= [1 "incoming text"]
+        (do (add-handlers {"/start" (fn [chat-id txt] [chat-id txt])})
+            ((get-handler "/start") 1 "incoming text"))))))
 
 (deftest test-parse-incoming-text
   (testing "Split incoming text to vector command and arguments"
