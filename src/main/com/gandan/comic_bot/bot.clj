@@ -4,19 +4,16 @@
             [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
-            [com.gandan.comic-bot.handler :as bot-handler]))
+            [com.gandan.comic-bot.handler :as handler]))
 
 ; Related Telegram Bot API communication
-(defn message->dto [message]
-  {:chat-id (get-in message ["message" "chat" "id"])
-   :text (get-in message ["message" "text"])})
-
-(defn find-latest-update-id [updates]
-  (get (last updates) "update_id"))
-
 (defn telegram-updates->dto [updates]
-  {:latest-update-id (find-latest-update-id updates)
-   :incoming-messages (into [] (map message->dto updates))})
+  (let [update-id (get (last updates) "update_id")
+        messages (into [] (map #({:chat-id (get-in % ["message" "chat" "id"])
+                                  :text (get-in % ["message" "text"])})
+                               updates))]
+    {:latest-update-id update-id
+     :incoming-messages messages}))
 
 (defn latest-xkcd-strip
   "Get latest comic strip url from xkcd"
@@ -24,22 +21,15 @@
   (-> (xkcd/fetch-latest-comic)
       (get "img")))
 
-(bot-handler/add-handlers
- {"/start" (fn [chat-id _] (telegram/send-message chat-id "Welcome to prototype comic bot!")),
-  "/latest" (fn [chat-id _] (telegram/send-image chat-id (latest-xkcd-strip)))})
-
-(defn process-msg [msg]
-  (let [{:keys [chat-id text]} msg]
-    (log/debug (str "Start processing message " msg))
-    (let [[cmd arg] (bot-handler/parse-incoming-text text)]
-      (if-let [handler (bot-handler/get-handler cmd)]
-        (handler chat-id arg)))
-    (log/debug (str "Finish processing message " msg))))
-
 (defn fetch-latest-messages [latest-update-id]
   (if latest-update-id
     (telegram/fetch-latest-messages latest-update-id)
     (telegram/fetch-latest-messages)))
+
+;; bot setup
+(handler/add-handlers
+ {"/start" (fn [chat-id _] (telegram/send-message chat-id "Welcome to prototype comic bot!")),
+  "/latest" (fn [chat-id _] (telegram/send-image chat-id (latest-xkcd-strip)))})
 
 (defn bot-polling [fn-fetcher fn-process-messages poll-interval-ms]
   (log/info "Start up Bot")
@@ -62,9 +52,10 @@
      (-> (fetch-latest-messages latest-fetched-update-id)
          (get "result")
          telegram-updates->dto))
-   #(dorun (pmap process-msg %1))
+   #(dorun (pmap handler/process-msg %1))
    60000))
 
+;; start and stop bot
 (defonce bot (ref nil))
 
 (defn stop [bot-chan]
