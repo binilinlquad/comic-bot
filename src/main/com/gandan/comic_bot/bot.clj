@@ -28,8 +28,8 @@
 
 ;; bot setup
 (handler/add-handlers
- {"/start" (fn [chat-id _] (telegram/send-message chat-id "Welcome to prototype comic bot!")),
-  "/latest" (fn [chat-id _] (telegram/send-image chat-id (latest-xkcd-strip)))})
+ {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
+  "/latest" #(telegram/send-image (:chat-id %) (latest-xkcd-strip))})
 
 (defn bot-polling [fn-fetcher fn-process-messages poll-interval-ms]
   (log/info "Start up Bot")
