@@ -13,8 +13,8 @@
 (use-fixtures :once token-fixture)
 
 (deftest integration-test-with-telegram-api
-  (testing "fetch latest messages"
-      (is (get (fetch-latest-messages) "ok")))
+  (testing "fetch telegram updates"
+      (is (get (fetch-updates) "ok")))
 
   (testing "send image message"
     (is (get

@@ -14,7 +14,7 @@
 (defn- create-endpoint [{:keys [base-url token]} path]
   (str base-url token "/" path))
 
-(defn fetch-latest-messages
+(defn fetch-updates
   ([]
    (-> (http/get (create-endpoint @config "getUpdates"))
        (response-to-json)))
