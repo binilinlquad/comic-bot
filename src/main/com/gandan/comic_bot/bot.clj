@@ -35,19 +35,18 @@
 
 (defn bot-polling
   [fetch-updates process-messages poll-interval-ms]
-  (do
-    (log/info "Start up Bot")
-    (let [bot-chan (chan)]
-      (go-loop [latest-update-id nil]
-        (log/info "fetch and process latest chats")
-        (let [m (fetch-updates latest-update-id)]
-          (process-messages (:incoming-messages m))
-          (log/info "next fetch in 1 minute")
-          (let [[v ch] (alts! [bot-chan (timeout poll-interval-ms)])]
-            (if (= ch bot-chan)
-              (do (log/info "Shut down Bot") nil)
-              (recur (:latest-update-id m))))))
-      bot-chan)))
+  (log/info "Start up Bot")
+  (let [bot-chan (chan)]
+    (go-loop [latest-update-id nil]
+      (log/info "fetch and process latest chats")
+      (let [m (fetch-updates latest-update-id)]
+        (process-messages (:incoming-messages m))
+        (log/info "next fetch in 1 minute")
+        (let [[v ch] (alts! [bot-chan (timeout poll-interval-ms)])]
+          (if (= ch bot-chan)
+            (do (log/info "Shut down Bot") nil)
+            (recur (:latest-update-id m))))))
+    bot-chan))
 
 (defn- spawn-bot
   []
