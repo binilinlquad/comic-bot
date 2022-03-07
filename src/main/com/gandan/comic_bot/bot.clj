@@ -1,7 +1,7 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
-            [clojure.core.async :refer [>! <! chan go go-loop alts! timeout]]
+            [clojure.core.async :refer [>! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.handler :as handler]))
@@ -61,7 +61,8 @@
 
 (defn stop
   [bot-chan]
-  (go (>! bot-chan :stop))
+  (go (>! bot-chan :stop)
+      (close! bot-chan))
   (dosync (ref-set bot nil)))
 
 (defn start
