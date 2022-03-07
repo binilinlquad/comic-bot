@@ -15,7 +15,7 @@
 (defn parse-incoming-text [txt]
   (split txt #"\s" 2))
 
-(defn process-msg [msg]
+(defn handle [msg]
   (let [{:keys [chat-id text]} msg]
     (let [[cmd arg] (parse-incoming-text text)]
       (if-let [handler (get-handler cmd)]

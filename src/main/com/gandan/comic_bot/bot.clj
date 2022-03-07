@@ -53,7 +53,7 @@
   (bot-polling
    #(-> (fetch-updates %1)
         (updates->map))
-   #(dorun (pmap handler/process-msg %1))
+   #(dorun (pmap handler/handle %1))
    60000))
 
 ;; start and stop bot
@@ -86,4 +86,3 @@
       (or (System/getenv "TELEGRAM_BOT_TOKEN"))
       (start))
   (ask-stop))
-
