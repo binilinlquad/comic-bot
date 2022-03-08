@@ -11,8 +11,8 @@
   "Convert list of Telegram Updates response to map for easier manipulation later"
   [updates]
   (let [update-id (get (last updates) "update_id")
-        messages (into [] (map #({:chat-id (get-in % ["message" "chat" "id"])
-                                  :text (get-in % ["message" "text"])})
+        messages (into [] (map (fn [upd] {:chat-id (get-in upd ["message" "chat" "id"])
+                                  :text (get-in upd ["message" "text"])})
                                updates))]
     {:latest-update-id update-id
      :incoming-messages messages}))
@@ -31,7 +31,7 @@
 ;; bot setup
 (handler/add-handlers
  {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
-  "/latest" #(telegram/send-image (:chat-id %) fetch-comic)})
+  "/latest" #(telegram/send-image (:chat-id %) (fetch-comic))})
 
 (defn bot-polling
   [fetch-updates process-messages poll-interval-ms]
