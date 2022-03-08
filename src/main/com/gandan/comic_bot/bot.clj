@@ -17,10 +17,6 @@
     {:latest-update-id update-id
      :incoming-messages messages}))
 
-(defn- fetch-comic
-  []
-  (get (xkcd/fetch-latest-comic) "img"))
-
 (defn- fetch-updates
   [latest-update-id]
   (-> (if latest-update-id
@@ -31,7 +27,7 @@
 ;; bot setup
 (handler/add-handlers
  {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
-  "/latest" #(telegram/send-image (:chat-id %) (fetch-comic))})
+  "/latest" #(telegram/send-image (:chat-id %) (get (xkcd/fetch-latest-comic) "img"))})
 
 (defn bot-polling
   [fetch-updates process-messages poll-interval-ms]
