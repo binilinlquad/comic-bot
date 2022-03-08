@@ -3,8 +3,9 @@
 
 (def handlers (atom {}))
 
-(defn add-handlers [map-ch]
+(defn add-handlers
   "Merge map of command and handler with handlers"
+  [map-ch]
   (swap! handlers merge map-ch))
 
 (defn get-handler[command]
