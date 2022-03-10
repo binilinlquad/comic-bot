@@ -13,3 +13,12 @@
   [upd]
   {:chat-id (chat-id upd)
    :text (text upd)})
+
+(defn update-id
+  [kv]
+  (get kv "update_id"))
+
+(defn last-update-id
+  [updates]
+  (update-id (last updates)))
+

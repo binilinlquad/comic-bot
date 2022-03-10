@@ -5,16 +5,14 @@
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.handler :as handler]
-            [com.gandan.comic-bot.mapper :refer [simplify-message-kv]]))
+            [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]))
 
 ; Related Telegram Bot API communication
 (defn updates->map
   "Convert list of Telegram Updates response to map for easier manipulation later"
   [updates]
-  (let [update-id (get (last updates) "update_id")
-        messages (into [] (map simplify-message-kv updates))]
-    {:latest-update-id update-id
-     :incoming-messages messages}))
+    {:latest-update-id (last-update-id updates)
+     :incoming-messages (into [] (map simplify-message-kv updates))})
 
 (defn- fetch-updates
   [latest-update-id]
