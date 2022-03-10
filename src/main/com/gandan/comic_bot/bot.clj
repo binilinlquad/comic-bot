@@ -4,16 +4,15 @@
             [clojure.core.async :refer [>! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
-            [com.gandan.comic-bot.handler :as handler]))
+            [com.gandan.comic-bot.handler :as handler]
+            [com.gandan.comic-bot.mapper :refer [simplify-message-kv]]))
 
 ; Related Telegram Bot API communication
 (defn updates->map
   "Convert list of Telegram Updates response to map for easier manipulation later"
   [updates]
   (let [update-id (get (last updates) "update_id")
-        messages (into [] (map (fn [upd] {:chat-id (get-in upd ["message" "chat" "id"])
-                                  :text (get-in upd ["message" "text"])})
-                               updates))]
+        messages (into [] (map simplify-message-kv updates))]
     {:latest-update-id update-id
      :incoming-messages messages}))
 
