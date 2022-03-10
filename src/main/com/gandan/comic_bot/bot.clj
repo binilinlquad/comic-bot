@@ -20,7 +20,7 @@
 (defn- fetch-updates
   [latest-update-id]
   (-> (if latest-update-id
-        (telegram/fetch-updates latest-update-id)
+        (telegram/fetch-updates (inc latest-update-id))
         (telegram/fetch-updates))
       (get "result")))
 

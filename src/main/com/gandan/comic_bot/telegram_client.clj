@@ -20,7 +20,7 @@
        (response-to-json)))
   ([offset]
    (-> (http/get (create-endpoint @config "getUpdates")
-                 {:query-params {"offset" (inc offset)}})
+                 {:query-params {"offset" offset}})
        (response-to-json))))
 
 (defn send-image [chat-id url]
