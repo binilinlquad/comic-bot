@@ -21,10 +21,9 @@
         (telegram/fetch-updates))
       (get "result")))
 
-(defn- update-id->offset [id]
-  (if id
-    (inc id)
-    nil))
+(defn- update-id->offset
+  [id]
+  (if id (inc id) nil))
 
 ;; bot setup
 (handler/add-handlers
