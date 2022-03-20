@@ -50,7 +50,7 @@
     (bot-polling bot-chan
                  #(fetch-updates %1)
                  #(dorun (pmap handler/handle %1))
-                 60000)
+                 10000)
     bot-chan))
 
 ;; start and stop bot
