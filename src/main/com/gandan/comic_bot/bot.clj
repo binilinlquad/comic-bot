@@ -35,23 +35,21 @@
   [bot-chan fetch-updates process-messages poll-interval-ms]
   (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
-    (let [msg (<! bot-chan)]
-      (condp = msg
-        :stop
+    (let [polling (go (<! (timeout poll-interval-ms)) ::fetch)
+          [cmd port] (alts! [bot-chan polling])]
+      (condp = cmd 
+        ::stop
         (do (log/info "Shut down Bot")
+            (close! polling)
             (close! bot-chan))
 
+        ::fetch
         (let [m (fetch-updates latest-update-id)]
           (log/info (str "fetch and process latest message with offset " latest-update-id))
           (process-messages (:incoming-messages m))
           (recur (update-id->offset (:latest-update-id m)))))))
-    ;; start
-  (>!! bot-chan :fetch)
-    ;; polling part
-  (go-loop []
-    (<! (timeout poll-interval-ms))
-    (if (>! bot-chan :fetch)
-      (recur))))
+  ;; fetch when startup
+  (>!! bot-chan ::fetch))
 
 (defn- spawn-bot
   []
@@ -69,7 +67,7 @@
 
 (defn stop
   [bot-chan]
-  (>!! bot-chan :stop)
+  (>!! bot-chan ::stop)
   (dosync (ref-set bot nil)))
 
 (defn start
