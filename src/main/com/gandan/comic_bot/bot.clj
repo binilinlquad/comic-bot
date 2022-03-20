@@ -24,10 +24,10 @@
   "/latest" #(telegram/send-image (:chat-id %) (get (xkcd/fetch-latest-comic) "img"))})
 
 (defn bot-polling
-  [bot-chan fetch-updates process-messages poll-interval-ms]
+  [bot-chan fetch-updates process-messages interval-ms]
   (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
-    (let [polling (go (<! (timeout poll-interval-ms)) ::fetch)
+    (let [polling (go (<! (timeout interval-ms)) ::fetch)
           [cmd port] (alts! [bot-chan polling])]
       (condp = cmd
         ::stop
