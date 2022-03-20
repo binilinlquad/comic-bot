@@ -36,7 +36,7 @@
   (go-loop [latest-update-id nil]
     (let [polling (go (<! (timeout poll-interval-ms)) ::fetch)
           [cmd port] (alts! [bot-chan polling])]
-      (condp = cmd 
+      (condp = cmd
         ::stop
         (do (log/info "Shut down Bot")
             (close! polling)
@@ -53,12 +53,11 @@
 (defn- spawn-bot
   []
   (let [bot-chan (chan)]
-    (bot-polling
-     bot-chan
-     #(-> (fetch-updates %1)
-          (updates->map))
-     #(dorun (pmap handler/handle %1))
-     60000)
+    (bot-polling bot-chan
+                 #(-> (fetch-updates %1)
+                      (updates->map))
+                 #(dorun (pmap handler/handle %1))
+                 60000)
     bot-chan))
 
 ;; start and stop bot
