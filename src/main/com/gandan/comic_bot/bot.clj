@@ -7,13 +7,6 @@
             [com.gandan.comic-bot.handler :as handler]
             [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]))
 
-; Related Telegram Bot API communication
-(defn updates->map
-  "Convert list of Telegram Updates response to map for easier manipulation later"
-  [updates]
-  {:latest-update-id (last-update-id updates)
-   :incoming-messages (into [] (map simplify-message-kv updates))})
-
 (defn- fetch-updates
   [offset]
   (-> (if offset
@@ -43,10 +36,11 @@
             (close! bot-chan))
 
         ::fetch
-        (let [m (fetch-updates latest-update-id)]
+        (let [updates (fetch-updates latest-update-id)]
           (log/info (str "fetch and process latest message with offset " latest-update-id))
-          (process-messages (:incoming-messages m))
-          (recur (update-id->offset (:latest-update-id m)))))))
+          (-> (mapv simplify-message-kv updates)
+              (process-messages))
+          (recur (update-id->offset (last-update-id updates)))))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))
 
@@ -54,8 +48,7 @@
   []
   (let [bot-chan (chan)]
     (bot-polling bot-chan
-                 #(-> (fetch-updates %1)
-                      (updates->map))
+                 #(fetch-updates %1)
                  #(dorun (pmap handler/handle %1))
                  60000)
     bot-chan))
