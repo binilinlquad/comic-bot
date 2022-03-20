@@ -19,5 +19,4 @@
 (defn handle [msg]
   (let [{:keys [chat-id text]} msg]
     (let [[cmd &args] (parse-incoming-text text)]
-      (if-let [handler (get-handler cmd)]
-        (handler msg)))))
+      ((get-handler cmd) msg))))
