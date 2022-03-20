@@ -1,7 +1,7 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
-            [clojure.core.async :refer [>! <! chan go go-loop alts! timeout close!]]
+            [clojure.core.async :refer [>! >!! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.handler :as handler]
@@ -11,15 +11,20 @@
 (defn updates->map
   "Convert list of Telegram Updates response to map for easier manipulation later"
   [updates]
-    {:latest-update-id (last-update-id updates)
-     :incoming-messages (into [] (map simplify-message-kv updates))})
+  {:latest-update-id (last-update-id updates)
+   :incoming-messages (into [] (map simplify-message-kv updates))})
 
 (defn- fetch-updates
-  [latest-update-id]
-  (-> (if latest-update-id
-        (telegram/fetch-updates (inc latest-update-id))
+  [offset]
+  (-> (if offset
+        (telegram/fetch-updates offset)
         (telegram/fetch-updates))
       (get "result")))
+
+(defn- update-id->offset [id]
+  (if id
+    (inc id)
+    nil))
 
 ;; bot setup
 (handler/add-handlers
@@ -27,35 +32,44 @@
   "/latest" #(telegram/send-image (:chat-id %) (get (xkcd/fetch-latest-comic) "img"))})
 
 (defn bot-polling
-  [fetch-updates process-messages poll-interval-ms]
+  [bot-chan fetch-updates process-messages poll-interval-ms]
   (log/info "Start up Bot")
-  (let [bot-chan (chan)]
-    (go-loop [latest-update-id nil]
-      (log/info "fetch and process latest chats")
-      (let [m (fetch-updates latest-update-id)]
-        (process-messages (:incoming-messages m))
-        (log/info "next fetch in 1 minute")
-        (let [[v ch] (alts! [bot-chan (timeout poll-interval-ms)])]
-          (if (= ch bot-chan)
-            (do (log/info "Shut down Bot") nil)
-            (recur (:latest-update-id m))))))
-    bot-chan))
+  (go-loop [latest-update-id nil]
+    (let [msg (<! bot-chan)]
+      (condp = msg
+        :stop
+        (do (log/info "Shut down Bot")
+            (close! bot-chan))
+
+        (let [m (fetch-updates latest-update-id)]
+          (log/info (str "fetch and process latest message with offset " latest-update-id))
+          (process-messages (:incoming-messages m))
+          (recur (update-id->offset (:latest-update-id m)))))))
+    ;; start
+  (>!! bot-chan :fetch)
+    ;; polling part
+  (go-loop []
+    (<! (timeout poll-interval-ms))
+    (if (>! bot-chan :fetch)
+      (recur))))
 
 (defn- spawn-bot
   []
-  (bot-polling
-   #(-> (fetch-updates %1)
-        (updates->map))
-   #(dorun (pmap handler/handle %1))
-   60000))
+  (let [bot-chan (chan)]
+    (bot-polling
+     bot-chan
+     #(-> (fetch-updates %1)
+          (updates->map))
+     #(dorun (pmap handler/handle %1))
+     60000)
+    bot-chan))
 
 ;; start and stop bot
 (defonce bot (ref nil))
 
 (defn stop
   [bot-chan]
-  (go (>! bot-chan :stop)
-      (close! bot-chan))
+  (>!! bot-chan :stop)
   (dosync (ref-set bot nil)))
 
 (defn start
