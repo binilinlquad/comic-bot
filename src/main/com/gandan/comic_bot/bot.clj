@@ -1,7 +1,7 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as log]
             [clojure.string :refer [blank?]]
-            [clojure.core.async :refer [>! >!! <! chan go go-loop alts! timeout close!]]
+            [clojure.core.async :refer [>!! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.handler :as handler]
@@ -28,7 +28,7 @@
   (log/info "Start up Bot")
   (go-loop [latest-update-id nil]
     (let [polling (go (<! (timeout interval-ms)) ::fetch)
-          [cmd port] (alts! [bot-chan polling])]
+          [cmd] (alts! [bot-chan polling])]
       (condp = cmd
         ::stop
         (do (log/info "Shut down Bot")

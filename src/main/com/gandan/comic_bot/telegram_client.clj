@@ -2,7 +2,8 @@
   (:require [clj-http.client :as http]
             [cheshire.core :as cheshire]))
 
-(def config (atom {:base-url "https://api.telegram.org/bot"
+(def config (atom 
+              {:base-url "https://api.telegram.org/bot"
               :token "put-your-api-token"}))
 
 (defn configure [conf]

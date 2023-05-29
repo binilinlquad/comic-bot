@@ -11,12 +11,12 @@
 (defn get-handler[command]
   (if-let [handler (get @handlers command)]
     handler
-    (fn [&ignored] nil)))
+    (fn [& _] nil)))
 
 (defn parse-incoming-text [txt]
   (split txt #"\s" 2))
 
 (defn handle [msg]
-  (let [{:keys [chat-id text]} msg]
-    (let [[cmd &args] (parse-incoming-text text)]
-      ((get-handler cmd) msg))))
+  (let [{:keys [_ text]} msg
+        [cmd & _] (parse-incoming-text text)] 
+    ((get-handler cmd) msg)))
