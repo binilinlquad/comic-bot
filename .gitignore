@@ -4,5 +4,6 @@
 bin
 bot_token.txt
 env.sh
-
+.clj-kondo
+.lsp
 /.nrepl-port
