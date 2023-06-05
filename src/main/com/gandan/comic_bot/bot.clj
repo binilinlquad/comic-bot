@@ -5,7 +5,8 @@
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.handler :as handler]
-            [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]))
+            [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]
+            [com.stuartsierra.component :as component]))
 
 (defn- fetch-updates
   [offset]
@@ -54,31 +55,26 @@
     bot-chan))
 
 ;; start and stop bot
-(defonce bot (ref nil))
+(defrecord Bot [bot-token bot]
+  component/Lifecycle
+  (start [component]
+    (assert (not (blank? bot-token)) "Bot token is not set!")
+    (telegram/configure {:token bot-token})
+    (assoc component :bot (spawn-bot)))
+  
+  (stop [component]
+    (>!! bot ::stop)
+    (assoc component :bot nil)))
 
-(defn stop
-  [bot-chan]
-  (>!! bot-chan ::stop)
-  (dosync (ref-set bot nil)))
-
-(defn start
-  ([bot-token]
-   (assert (not (blank? bot-token)) "Bot token is not set!")
-   (telegram/configure {:token bot-token})
-   (dosync
-    (if-not (nil? @bot) (stop @bot))
-    (ref-set bot (spawn-bot)))))
-
-(defn ask-stop
-  []
-  (println "Enter 'y' to shutdown")
-  (while (not= "y" (read-line))
-    (println "Enter 'y' (without ') to shutdown"))
-  (stop @bot))
+(defn new-system [bot-token]
+  (map->Bot {:bot-token bot-token}))
 
 (defn -main
   [& args]
-  (-> (nth args 0)
-      (or (System/getenv "TELEGRAM_BOT_TOKEN"))
-      (start))
-  (ask-stop))
+  (let [token (-> (nth args 0)
+                  (or (System/getenv "TELEGRAM_BOT_TOKEN")))
+        system (new-system token)
+        app (component/start system)] 
+    (while (not= "y" (read-line))
+      (println "Enter 'y' (without ') to shutdown"))
+    (component/stop app)))
