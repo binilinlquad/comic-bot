@@ -15,10 +15,6 @@
         (telegram/fetch-updates))
       (get "result")))
 
-(defn- update-id->offset
-  [id]
-  (if id (inc id) nil))
-
 ;; bot setup
 (handler/add-handlers
  {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
@@ -37,11 +33,12 @@
             (close! bot-chan))
 
         ::fetch
-        (let [updates (fetch-updates latest-update-id)]
+        (let [updates (fetch-updates latest-update-id)
+              latest-update-id (last-update-id updates)]
           (log/info (str "fetch and process latest message with offset " latest-update-id))
           (-> (mapv simplify-message-kv updates)
               (process-messages))
-          (recur (update-id->offset (last-update-id updates)))))))
+          (recur (or (nil? latest-update-id) (inc latest-update-id)))))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))
 
