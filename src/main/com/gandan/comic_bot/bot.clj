@@ -29,7 +29,7 @@
         (let [body (fetch-updates latest-update-id)
               updates (get body :result)
               latest-update-id (last-update-id updates)]
-          (log/info (str "fetch and process latest message with offset " latest-update-id))
+          (log/info (str "fetch and process messages with offset " latest-update-id))
           (-> (mapv simplify-message-kv updates)
               (process-messages))
           (recur (or (nil? latest-update-id) (inc latest-update-id)))))))
