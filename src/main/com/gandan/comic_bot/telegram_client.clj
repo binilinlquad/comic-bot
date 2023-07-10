@@ -1,8 +1,8 @@
 (ns com.gandan.comic-bot.telegram-client
   (:require [clj-http.client :as http]))
 
-(def config (atom 
-              {:base-url "https://api.telegram.org/bot"
+(def config (atom
+             {:base-url "https://api.telegram.org/bot"
               :token "put-your-api-token"}))
 
 (defn configure [conf]
@@ -12,13 +12,15 @@
   (str base-url token "/" path))
 
 (defn fetch-updates
-  ([]
-   (-> (http/get (create-endpoint @config "getUpdates") {:as :json})
-       (get :body)))
+  ([] (fetch-updates nil))
   ([offset]
-   (-> (http/get (create-endpoint @config "getUpdates")
-                 {:query-params {"offset" offset} :as :json})
-       (get :body))))
+   (if offset
+     (-> (http/get (create-endpoint @config "getUpdates")
+                   {:query-params {"offset" offset} :as :json})
+         (get :body))
+     (-> (http/get (create-endpoint @config "getUpdates") {:as :json})
+         (get :body)))))
+
 
 (defn send-image [chat-id url]
   (-> (http/post (create-endpoint @config "sendPhoto")

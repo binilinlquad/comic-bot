@@ -8,13 +8,6 @@
             [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]
             [com.stuartsierra.component :as component]))
 
-(defn- fetch-updates
-  [offset]
-  (-> (if offset
-        (telegram/fetch-updates offset)
-        (telegram/fetch-updates))
-      (get :result)))
-
 ;; bot setup
 (handler/add-handlers
  {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
@@ -33,7 +26,8 @@
             (close! bot-chan))
 
         ::fetch
-        (let [updates (fetch-updates latest-update-id)
+        (let [body (fetch-updates latest-update-id)
+              updates (get body :result)
               latest-update-id (last-update-id updates)]
           (log/info (str "fetch and process latest message with offset " latest-update-id))
           (-> (mapv simplify-message-kv updates)
@@ -46,7 +40,7 @@
   []
   (let [bot-chan (chan)]
     (bot-polling bot-chan
-                 #(fetch-updates %1)
+                 #(telegram/fetch-updates %1)
                  #(dorun (pmap handler/handle %1))
                  10000)
     bot-chan))
