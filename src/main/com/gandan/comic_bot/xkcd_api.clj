@@ -2,5 +2,4 @@
   (:require [clj-http.client :as client]))
 
 (defn fetch-latest-comic []
-  (-> (client/get "https://xkcd.com/info.0.json" {:as :json})  
-      (get :body)))
+  (get-in (client/get "https://xkcd.com/info.0.json" {:as :json}) [:body :img]))
