@@ -2,11 +2,11 @@
 
 (defn chat-id
   [kv]
-  (get-in kv ["message" "chat" "id"]))
+  (get-in kv [:message :chat :id]))
 
 (defn text
   [kv]
-  (get-in kv ["message" "text"]))
+  (get-in kv [:message :text]))
 
 (defn simplify-message-kv
   "Simplify key-value telegram update"
@@ -16,7 +16,7 @@
 
 (defn update-id
   [kv]
-  (get kv "update_id"))
+  (get kv :update_id))
 
 (defn last-update-id
   [updates]

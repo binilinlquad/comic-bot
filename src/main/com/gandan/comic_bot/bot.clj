@@ -13,12 +13,12 @@
   (-> (if offset
         (telegram/fetch-updates offset)
         (telegram/fetch-updates))
-      (get "result")))
+      (get :result)))
 
 ;; bot setup
 (handler/add-handlers
  {"/start" #(telegram/send-message (:chat-id %) "Welcome to prototype comic bot!")
-  "/latest" #(telegram/send-image (:chat-id %) (get (xkcd/fetch-latest-comic) "img"))})
+  "/latest" #(telegram/send-image (:chat-id %) (get (xkcd/fetch-latest-comic) :img))})
 
 (defn bot-polling
   [bot-chan fetch-updates process-messages interval-ms]
