@@ -16,7 +16,8 @@
 (defn parse-incoming-text [txt]
   (split txt #"\s" 2))
 
-(defn handle [msg]
-  (let [{:keys [_ text]} msg
+(defn handle [update]
+  (let [msg (:message update)
+        text (:text msg)
         [cmd & _] (parse-incoming-text text)] 
     ((get-handler cmd) msg)))

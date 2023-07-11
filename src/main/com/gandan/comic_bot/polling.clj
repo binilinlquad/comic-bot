@@ -3,7 +3,7 @@
             [clojure.core.async :refer [>!! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram] 
             [com.gandan.comic-bot.handler :as handler]
-            [com.gandan.comic-bot.mapper :refer [simplify-message-kv last-update-id]]))
+            [com.gandan.comic-bot.mapper :refer [last-update-id]]))
 
 (defn bot-polling
   [bot-chan fetch-updates process-messages interval-ms]
@@ -22,8 +22,7 @@
               updates (get body :result)
               latest-update-id (last-update-id updates)]
           (log/info (str "fetch and process messages with offset " latest-update-id))
-          (-> (mapv simplify-message-kv updates)
-              (process-messages))
+          (process-messages updates)
           (recur (or (nil? latest-update-id) (inc latest-update-id)))))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))

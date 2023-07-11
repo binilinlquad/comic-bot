@@ -8,12 +8,6 @@
   [kv]
   (get-in kv [:message :text]))
 
-(defn simplify-message-kv
-  "Simplify key-value telegram update"
-  [upd]
-  {:chat-id (chat-id upd)
-   :text (text upd)})
-
 (defn update-id
   [kv]
   (get kv :update_id))
