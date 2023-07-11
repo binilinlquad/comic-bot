@@ -4,6 +4,9 @@ Comic-Bot is a simple bot to interact with your favorite web comic.
 
 It has very limited capabilities and only supports **Xkcd** comic.
 
+# Prerequisite
+Get Bot Token by following instruction in [Telegram Website](https://core.telegram.org/bots/tutorial#obtain-your-bot-token)
+
 # How to Start
 There are 2 ways to start:
 1. Run `clj -M:main $TELEGRAM_BOT_TOKEN` in shell where TELEGRAM_BOT_TOKEN is Telegram Bot API key.
@@ -22,7 +25,7 @@ Try interacting with bot by send chat message to contact ComicBot in Telegram:
 ## TODO
 - [x] Print bot status
 - [x] reply message/picture asynchronously
-- [ ] improve tests
+- [ ] improve polling: replace pmap
 
 ## Disclaimer
 
