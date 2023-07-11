@@ -8,23 +8,31 @@
 (defn configure [conf]
   (dosync (swap! config merge conf)))
 
-(defn- create-endpoint [{:keys [base-url token]} path]
-  (str base-url token "/" path))
+(defn- build-url 
+  ([path] (build-url @config path)) 
+  ([{:keys [base-url token]} path] (str base-url token "/" path)))
 
 (defn fetch-updates
   ([] (fetch-updates nil))
   ([offset]
-   (-> (if offset 
-         (http/get (create-endpoint @config "getUpdates") {:query-params {"offset" offset} :as :json})
-         (http/get (create-endpoint @config "getUpdates") {:as :json}))
-       (get :body))))
+   (:body (let [query-params (if offset
+                               {:query-params {"offset" offset}}
+                               nil)]
+            (http/get
+             (build-url "getUpdates")
+             (merge {:as :json} query-params))))))
 
-(defn send-image [chat-id url]
-  (-> (http/post (create-endpoint @config "sendPhoto")
-                 {:form-params {:chat_id chat-id :photo url} :as :json})
-      (get :body)))
+(defn send-image [chat-id photo-url]
+  (:body (http/post
+          (build-url "sendPhoto")
+          {:as :json
+           :form-params {:chat_id chat-id
+                         :photo photo-url}})))
 
 (defn send-message [chat-id txt]
-  (-> (http/post (create-endpoint @config "sendMessage")
-                 {:form-params {:chat_id chat-id :text txt} :as :json})
-      (get :body)))
+  (:body (http/post
+          (build-url "sendMessage")
+          {:as :json
+           :form-params {:chat_id chat-id
+                         :text    txt}})))
+  
