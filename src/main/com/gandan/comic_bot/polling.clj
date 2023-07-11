@@ -20,7 +20,7 @@
         ::fetch
         (let [body (fetch-updates latest-update-id)
               updates (get body :result)
-              latest-update-id (last-update-id updates)]
+              latest-update-id (:update_id (last updates))]
           (log/info (str "fetch and process messages with offset " latest-update-id))
           (process-messages updates)
           (recur (or (nil? latest-update-id) (inc latest-update-id)))))))
