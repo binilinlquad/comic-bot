@@ -14,13 +14,10 @@
 (defn fetch-updates
   ([] (fetch-updates nil))
   ([offset]
-   (if offset
-     (-> (http/get (create-endpoint @config "getUpdates")
-                   {:query-params {"offset" offset} :as :json})
-         (get :body))
-     (-> (http/get (create-endpoint @config "getUpdates") {:as :json})
-         (get :body)))))
-
+   (-> (if offset 
+         (http/get (create-endpoint @config "getUpdates") {:query-params {"offset" offset} :as :json})
+         (http/get (create-endpoint @config "getUpdates") {:as :json}))
+       (get :body))))
 
 (defn send-image [chat-id url]
   (-> (http/post (create-endpoint @config "sendPhoto")
