@@ -5,7 +5,7 @@
             [com.gandan.comic-bot.handler :as handler]))
 
 (defn bot-polling
-  [bot-chan fetch-updates process interval-ms log]
+  [bot-chan act interval-ms log]
   (log "Start up Bot")
   (go-loop [offset nil]
     (let [polling (go (<! (timeout interval-ms)) ::fetch)
@@ -17,12 +17,7 @@
             (close! bot-chan))
 
         ::fetch
-        (let [body (fetch-updates offset)
-              updates (get body :result)
-              last-id (:update_id (last updates))
-              offset (or (nil? last-id) (inc last-id))]
-          (process updates)
-          (recur offset)))))
+        (recur (act offset)))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))
 
@@ -30,8 +25,12 @@
   []
   (let [bot-chan (chan)]
     (bot-polling bot-chan
-                 #(telegram/fetch-updates %1)
-                 #(handler/handle %1)
+                 (fn [offset] 
+                   (let [resp-body (telegram/fetch-updates offset) 
+                         updates (get resp-body :result)
+                         _ (doall (pmap handler/handle updates))
+                         last-id (:update_id (last updates))]
+                     (if last-id (inc last-id) nil)))
                  10000
-                 logger/info)
+                 #(logger/info %))
     bot-chan))
