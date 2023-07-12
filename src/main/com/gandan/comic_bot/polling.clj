@@ -4,27 +4,27 @@
             [com.gandan.comic-bot.telegram-client :as telegram] 
             [com.gandan.comic-bot.handler :as handler]))
 
-(defn bot-polling
-  [bot-chan act poll log]
+(defn bot-poll
+  [ch act poll log]
   (log "Start up Bot")
   (go-loop [offset nil] 
     (let [polling (poll)
-          cmd (<! bot-chan)]
+          cmd (<! ch)]
       (condp = cmd
         :stop
         (do (log "Shut down Bot")
             (close! polling)
-            (close! bot-chan))
+            (close! ch))
 
         :fetch
         (recur (act offset)))))
   ;; fetch when startup
-  (>!! bot-chan :fetch))
+  (>!! ch :fetch))
 
 (defn spawn-bot
   []
-  (let [bot-chan (chan)]
-    (bot-polling bot-chan
+  (let [ch (chan)]
+    (bot-poll ch
                  (fn [offset] 
                    (let [resp-body (telegram/fetch-updates offset) 
                          updates (get resp-body :result)
@@ -32,6 +32,6 @@
                          last-id (last handled)]
                      (if last-id (inc last-id) nil)))
                  #(go (<! (timeout 10000)) 
-                      (>!! bot-chan :fetch))
+                      (>!! ch :fetch))
                  #(logger/info %))
-    bot-chan))
+    ch))
