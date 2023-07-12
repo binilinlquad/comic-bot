@@ -19,10 +19,10 @@
         ::fetch
         (let [body (fetch-updates offset)
               updates (get body :result)
-              offset (:update_id (last updates))]
-          (log (str "fetch and process messages with offset " offset))
+              last-id (:update_id (last updates))
+              offset (or (nil? last-id) (inc last-id))]
           (process updates)
-          (recur (or (nil? offset) (inc offset)))))))
+          (recur offset)))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))
 
