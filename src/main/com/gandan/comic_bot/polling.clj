@@ -2,8 +2,7 @@
   (:require [clojure.tools.logging :as log] 
             [clojure.core.async :refer [>!! <! chan go go-loop alts! timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram] 
-            [com.gandan.comic-bot.handler :as handler]
-            [com.gandan.comic-bot.mapper :refer [last-update-id]]))
+            [com.gandan.comic-bot.handler :as handler]))
 
 (defn bot-polling
   [bot-chan fetch-updates process-messages interval-ms]
