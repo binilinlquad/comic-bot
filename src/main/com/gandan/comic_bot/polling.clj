@@ -7,7 +7,7 @@
 (defn bot-polling
   [bot-chan fetch-updates process-messages interval-ms]
   (log/info "Start up Bot")
-  (go-loop [latest-update-id nil]
+  (go-loop [offset nil]
     (let [polling (go (<! (timeout interval-ms)) ::fetch)
           [cmd] (alts! [bot-chan polling])]
       (condp = cmd
@@ -17,12 +17,12 @@
             (close! bot-chan))
 
         ::fetch
-        (let [body (fetch-updates latest-update-id)
+        (let [body (fetch-updates offset)
               updates (get body :result)
-              latest-update-id (:update_id (last updates))]
-          (log/info (str "fetch and process messages with offset " latest-update-id))
+              offset (:update_id (last updates))]
+          (log/info (str "fetch and process messages with offset " offset))
           (process-messages updates)
-          (recur (or (nil? latest-update-id) (inc latest-update-id)))))))
+          (recur (or (nil? offset) (inc offset)))))))
   ;; fetch when startup
   (>!! bot-chan ::fetch))
 
