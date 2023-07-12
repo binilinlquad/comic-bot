@@ -31,6 +31,6 @@
   (let [bot-chan (chan)]
     (bot-polling bot-chan
                  #(telegram/fetch-updates %1)
-                 #(dorun (pmap handler/handle %1))
+                 #(handler/handle %1)
                  10000)
     bot-chan))
