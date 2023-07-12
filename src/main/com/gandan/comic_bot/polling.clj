@@ -5,11 +5,11 @@
             [com.gandan.comic-bot.handler :as handler]))
 
 (defn bot-polling
-  [bot-chan act interval-ms log]
+  [bot-chan act poll log]
   (log "Start up Bot")
-  (go-loop [offset nil]
-    (let [polling (go (<! (timeout interval-ms)) :fetch)
-          [cmd] (alts! [bot-chan polling])]
+  (go-loop [offset nil] 
+    (let [polling (poll)
+          cmd (<! bot-chan)]
       (condp = cmd
         :stop
         (do (log "Shut down Bot")
@@ -31,6 +31,7 @@
                          handled (doall (pmap handler/handle updates))
                          last-id (last handled)]
                      (if last-id (inc last-id) nil)))
-                 10000
+                 #(go (<! (timeout 10000)) 
+                      (>!! bot-chan :fetch))
                  #(logger/info %))
     bot-chan))
