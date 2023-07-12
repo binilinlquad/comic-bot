@@ -20,4 +20,5 @@
   (let [msg (:message update)
         text (:text msg)
         [cmd & _] (parse-incoming-text text)] 
-    ((get-handler cmd) (get-in msg [:chat :id]))))
+    ((get-handler cmd) (get-in msg [:chat :id]))
+    (:update_id update)))

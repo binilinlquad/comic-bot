@@ -25,7 +25,7 @@
     (assoc component :bot (polling/spawn-bot)))
 
   (stop [component]
-    (>!! bot ::stop)
+    (>!! bot :stop)
     (assoc component :bot nil)))
 
 (defn new-system [bot-token]

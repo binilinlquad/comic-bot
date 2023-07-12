@@ -8,18 +8,18 @@
   [bot-chan act interval-ms log]
   (log "Start up Bot")
   (go-loop [offset nil]
-    (let [polling (go (<! (timeout interval-ms)) ::fetch)
+    (let [polling (go (<! (timeout interval-ms)) :fetch)
           [cmd] (alts! [bot-chan polling])]
       (condp = cmd
-        ::stop
+        :stop
         (do (log "Shut down Bot")
             (close! polling)
             (close! bot-chan))
 
-        ::fetch
+        :fetch
         (recur (act offset)))))
   ;; fetch when startup
-  (>!! bot-chan ::fetch))
+  (>!! bot-chan :fetch))
 
 (defn spawn-bot
   []
@@ -28,8 +28,8 @@
                  (fn [offset] 
                    (let [resp-body (telegram/fetch-updates offset) 
                          updates (get resp-body :result)
-                         _ (doall (pmap handler/handle updates))
-                         last-id (:update_id (last updates))]
+                         handled (doall (pmap handler/handle updates))
+                         last-id (last handled)]
                      (if last-id (inc last-id) nil)))
                  10000
                  #(logger/info %))
