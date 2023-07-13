@@ -9,7 +9,7 @@
 
 ;; bot setup
 (handler/add-handlers
- {"/start"
+ {"/hi"
   (fn [chat-id]
     (telegram/send-message chat-id "Welcome to prototype comic bot!"))
   "/latest"
