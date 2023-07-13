@@ -14,13 +14,16 @@ There are 2 ways to start:
 
 # List of Commands
 Try interacting with bot by send chat message to contact ComicBot in Telegram:
-1. `/start` to see welcome message
+1. `/hi` to see welcome message
 1. `/latest` to get latest Xkcd comic strip
 
 ## Under the hood
 
 - Comic-Bot uses [clj-http](https://github.com/dakrone/clj-http) to poll  any new recognized message and respond accordingly. 
 - Test runner uses [kaocha](https://github.com/lambdaisland/kaocha). Run all test by `bin/kaocha`.
+
+## How it works
+![Diagram](diagram.png)
 
 ## TODO
 - [x] Print bot status
