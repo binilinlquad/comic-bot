@@ -2,14 +2,15 @@
   (:require [clojure.tools.logging :as logger]
             [clojure.core.async :refer [>!! <! chan go go-loop timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
-            [com.gandan.comic-bot.handler :as handler]))
+            [com.gandan.comic-bot.handler :as handler]
+            [com.climate.claypoole :as cp]))
 
 (defn bot-poll
   [ch act interval-ms]
   (logger/info "Start up Bot")
   (go-loop [offset nil]
-    (let [polling (go 
-                    (<! (timeout interval-ms)) 
+    (let [polling (go
+                    (<! (timeout interval-ms))
                     (>!! ch :fetch))
           cmd (<! ch)]
       (condp = cmd
@@ -25,11 +26,12 @@
 
 (defn- fetch-and-process
   [offset]
-  (let [resp-body (telegram/fetch-updates offset)
-        updates (get resp-body :result)
-        handled (doall (pmap handler/handle updates))
-        last-id (last handled)]
-    (if last-id (inc last-id) nil)))
+  (cp/with-shutdown! [pool (cp/threadpool 16)]
+    (let [resp-body (telegram/fetch-updates offset)
+          updates (get resp-body :result)
+          handled (cp/pmap pool handler/handle updates)
+          last-id (last handled)]
+      (if last-id (inc last-id) nil))))
 
 (defn spawn-bot
   []
