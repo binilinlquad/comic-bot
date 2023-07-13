@@ -30,7 +30,7 @@
   (cp/with-shutdown! [pool pool]
     (let [resp-body (telegram/fetch-updates offset)
           updates (get resp-body :result)
-          handled (cp/pmap pool handler/handle updates)
+          handled (doall (cp/pmap pool handler/handle updates))
           last-id (last handled)]
       (if last-id (inc last-id) nil)))))
 
