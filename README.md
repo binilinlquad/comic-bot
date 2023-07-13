@@ -28,7 +28,7 @@ Try interacting with bot by send chat message to contact ComicBot in Telegram:
 ## TODO
 - [x] Print bot status
 - [x] reply message/picture asynchronously
-- [ ] improve polling: replace pmap
+- [ ] add tests
 
 ## Disclaimer
 
