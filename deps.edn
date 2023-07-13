@@ -10,7 +10,7 @@
 
  :aliases
  {;; clj -M:main # run bot 
-  :main {:main-opts ["-m" "com.gandan.comic-bot.bot"]}
+  :main {:main-opts ["-m" "com.gandan.comic-bot.main"]}
 
   :debug {:extra-paths ["resources/debug"]}
 

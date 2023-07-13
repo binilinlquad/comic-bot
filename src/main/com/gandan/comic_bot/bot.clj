@@ -1,42 +1,38 @@
 (ns com.gandan.comic-bot.bot
-  (:require [clojure.string :refer [blank?]]
-            [clojure.core.async :refer [>!!]]
+  (:require [clojure.tools.logging :as logger]
+            [clojure.core.async :refer [>!! <! chan go go-loop timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
-            [com.gandan.comic-bot.xkcd-api :as xkcd]
-            [com.gandan.comic-bot.handler :as handler]
-            [com.gandan.comic-bot.polling :as polling]
-            [com.stuartsierra.component :as component]))
+            [com.gandan.comic-bot.handler :as handler]))
 
-;; bot setup
-(handler/add-handlers
- {"/start"
-  (fn [chat-id]
-    (telegram/send-message chat-id "Welcome to prototype comic bot!"))
-  "/latest"
-  (fn [chat-id]
-    (telegram/send-image chat-id (xkcd/fetch-latest-comic)))})
+(defn bot-poll
+  [ch act interval-ms]
+  (logger/info "Start up Bot")
+  (go-loop [offset nil]
+    (let [polling (go 
+                    (<! (timeout interval-ms)) 
+                    (>!! ch :fetch))
+          cmd (<! ch)]
+      (condp = cmd
+        :stop
+        (do (logger/info "Shut down Bot")
+            (close! polling)
+            (close! ch))
 
-;; start and stop bot
-(defrecord Bot [bot-token bot]
-  component/Lifecycle
-  (start [component]
-    (assert (not (blank? bot-token)) "Bot token is not set!")
-    (telegram/configure {:token bot-token})
-    (assoc component :bot (polling/spawn-bot)))
+        :fetch
+        (recur (act offset)))))
+  ;; fetch when startup
+  (>!! ch :fetch))
 
-  (stop [component]
-    (>!! bot :stop)
-    (assoc component :bot nil)))
+(defn- fetch-and-process
+  [offset]
+  (let [resp-body (telegram/fetch-updates offset)
+        updates (get resp-body :result)
+        handled (doall (pmap handler/handle updates))
+        last-id (last handled)]
+    (if last-id (inc last-id) nil)))
 
-(defn new-system [bot-token]
-  (map->Bot {:bot-token bot-token}))
-
-(defn -main
-  [& args]
-  (let [token (-> (nth args 0)
-                  (or (System/getenv "TELEGRAM_BOT_TOKEN")))
-        system (new-system token)
-        app (component/start system)]
-    (while (not= "y" (read-line))
-      (println "Enter 'y' (without ') to shutdown"))
-    (component/stop app)))
+(defn spawn-bot
+  []
+  (let [ch (chan)]
+    (bot-poll ch fetch-and-process 10000)
+    ch))
