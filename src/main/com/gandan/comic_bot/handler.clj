@@ -9,9 +9,7 @@
   (swap! handlers merge map-ch))
 
 (defn get-handler[command]
-  (if-let [handler (get @handlers command)]
-    handler
-    (fn [& _] nil)))
+  (get @handlers command (fn [& _] nil)))
 
 (defn parse-incoming-text [txt]
   (split txt #"\s" 2))
