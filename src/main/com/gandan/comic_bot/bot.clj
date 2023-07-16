@@ -29,7 +29,7 @@
         updates (get resp-body :result)
         handled (doall (pmap handler/handle updates))
         last-id (last handled)]
-    (if last-id (inc last-id) nil)))
+    (when last-id (inc last-id))))
 
 (defn spawn-bot
   []

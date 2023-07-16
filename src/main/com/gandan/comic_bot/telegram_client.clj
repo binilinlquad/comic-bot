@@ -8,16 +8,14 @@
 (defn configure [conf]
   (dosync (swap! config merge conf)))
 
-(defn- build-url 
-  ([path] (build-url @config path)) 
+(defn- build-url
+  ([path] (build-url @config path))
   ([{:keys [base-url token]} path] (str base-url token "/" path)))
 
 (defn fetch-updates
   ([] (fetch-updates nil))
   ([offset]
-   (:body (let [query-params (if offset
-                               {:query-params {"offset" offset}}
-                               nil)]
+   (:body (let [query-params (when offset {:query-params {"offset" offset}})]
             (http/get
              (build-url "getUpdates")
              (merge {:as :json} query-params))))))
