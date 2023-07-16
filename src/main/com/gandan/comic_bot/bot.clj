@@ -27,8 +27,8 @@
   [offset]
   (let [resp-body (telegram/fetch-updates offset)
         updates (get resp-body :result)
-        handled (doall (pmap handler/handle updates))
-        last-id (last handled)]
+        _ (doall (pmap handler/handle updates))
+        last-id (:update_id (last updates))]
     (when last-id (inc last-id))))
 
 (defn spawn-bot
