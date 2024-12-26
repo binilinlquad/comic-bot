@@ -25,7 +25,8 @@
 
 (defn- fetch-and-process
   [offset]
-  (let [{{:keys [updates]} :result} (telegram/fetch-updates offset) 
+  (let [resp-body (telegram/fetch-updates offset)
+        updates (get resp-body :result)
         _ (doall (pmap handler/handle updates))
         last-id (:update_id (last updates))]
     (when last-id (inc last-id))))
