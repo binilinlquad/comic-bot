@@ -1,7 +1,7 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as logger]
             [clojure.core.async :refer [<!! go go-loop timeout close!]]
-            [com.gandan.comic-bot.telegram-client :as telegram]
+            [com.gandan.comic-bot.telegram-client :as api]
             [com.gandan.comic-bot.handler :as handler]))
 
 (defn repeat-action-periodically
@@ -12,7 +12,7 @@
 
 (defn- fetch-and-process
   [offset]
-  (let [resp-body (telegram/fetch-updates offset)
+  (let [resp-body (api/fetch-updates offset)
         updates (get resp-body :result)
         _ (doall (pmap handler/handle updates))
         last-id (:update_id (last updates))]
