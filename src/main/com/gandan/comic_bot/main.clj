@@ -9,12 +9,12 @@
 
 ;; bot setup
 (handler/add-handlers
- {"/hi"
-  (fn [chat-id]
-    (telegram/send-message chat-id "Welcome to prototype comic bot!"))
-  "/latest"
-  (fn [chat-id]
-    (telegram/send-image chat-id (xkcd/fetch-latest-comic)))})
+  {"/hi"
+   (fn [chat-id]
+     (telegram/send-message chat-id "Welcome to prototype comic bot!"))
+   "/latest"
+   (fn [chat-id]
+     (telegram/send-image chat-id (xkcd/fetch-latest-comic)))})
 
 ;; start and stop bot
 (defrecord Bot [bot-token bot-chan]
