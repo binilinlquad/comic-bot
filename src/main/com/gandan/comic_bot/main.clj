@@ -2,21 +2,10 @@
   (:require [clojure.string :refer [blank?]]
             [clojure.core.async :refer [>!! chan]]
             [com.gandan.comic-bot.telegram-client :as telegram]
-            [com.gandan.comic-bot.xkcd-api :as xkcd]
-            [com.gandan.comic-bot.handler :as handler]
             [com.gandan.comic-bot.bot :as bot]
             [com.stuartsierra.component :as component]))
 
-;; bot setup
-(handler/add-handlers
-  {"/hi"
-   (fn [chat-id]
-     (telegram/send-message chat-id "Welcome to prototype comic bot!"))
-   "/latest"
-   (fn [chat-id]
-     (telegram/send-image chat-id (xkcd/fetch-latest-comic)))})
-
-;; start and stop bot
+;; start and stop bot with Component
 (defrecord Bot [bot-token bot-chan]
   component/Lifecycle
   (start [component]

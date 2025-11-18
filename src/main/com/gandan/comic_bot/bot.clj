@@ -1,8 +1,18 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as logger]
             [clojure.core.async :refer [<!! go go-loop timeout close!]]
+            [com.gandan.comic-bot.xkcd-api :as xkcd]
             [com.gandan.comic-bot.telegram-client :as api]
-            [com.gandan.comic-bot.handler :as handler]))
+            [com.gandan.comic-bot.commander :as commander]))
+
+;; bot setup
+(commander/set-command-and-fn-map
+  {"/hi"
+   (fn [chat-id]
+     (api/send-message chat-id "Welcome to prototype comic bot!"))
+   "/latest"
+   (fn [chat-id]
+     (api/send-image chat-id (xkcd/fetch-latest-comic)))})
 
 (defn repeat-action-periodically
   [action interval-ms]
@@ -14,15 +24,16 @@
   [offset]
   (let [resp-body (api/fetch-updates offset)
         updates (get resp-body :result)
-        _ (doall (pmap handler/handle updates))
         last-id (:update_id (last updates))]
+    (doall (pmap commander/interpret-and-execute-command updates))
     (when last-id (inc last-id))))
 
 (defn spawn-bot
   [stop-chan]
   (go
     (logger/info "Start up Bot")
-    (let [polling (repeat-action-periodically fetch-and-process 10000)]
+    (let [interval-ms 1000
+          polling (repeat-action-periodically fetch-and-process interval-ms)]
       (condp = (<!! stop-chan)
         :stop
         (do (logger/info "Shut down Bot")
