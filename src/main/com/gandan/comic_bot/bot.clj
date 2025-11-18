@@ -1,27 +1,14 @@
 (ns com.gandan.comic-bot.bot
   (:require [clojure.tools.logging :as logger]
-            [clojure.core.async :refer [>!! <! chan go go-loop timeout close!]]
+            [clojure.core.async :refer [<!! go go-loop timeout close!]]
             [com.gandan.comic-bot.telegram-client :as telegram]
             [com.gandan.comic-bot.handler :as handler]))
 
-(defn bot-poll
-  [ch act interval-ms]
-  (logger/info "Start up Bot")
+(defn repeat-action-periodically
+  [action interval-ms]
   (go-loop [offset nil]
-    (let [polling (go
-                    (<! (timeout interval-ms))
-                    (>!! ch :fetch))
-          cmd (<! ch)]
-      (condp = cmd
-        :stop
-        (do (logger/info "Shut down Bot")
-            (close! polling)
-            (close! ch))
-
-        :fetch
-        (recur (act offset)))))
-  ;; fetch when startup
-  (>!! ch :fetch))
+    (timeout interval-ms)
+    (recur (action offset))))
 
 (defn- fetch-and-process
   [offset]
@@ -32,7 +19,12 @@
     (when last-id (inc last-id))))
 
 (defn spawn-bot
-  []
-  (let [ch (chan)]
-    (bot-poll ch fetch-and-process 10000)
-    ch))
+  [stop-chan]
+  (go
+    (logger/info "Start up Bot")
+    (let [polling (repeat-action-periodically fetch-and-process 10000)]
+      (condp = (<!! stop-chan)
+        :stop
+        (do (logger/info "Shut down Bot")
+            (close! polling)
+            (close! stop-chan))))))
